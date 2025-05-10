@@ -1,10 +1,2 @@
-Addressing Vulnerabilities in Dependencies
-Since your npm install completed successfully but showed 4 high severity vulnerabilities, follow these steps to fix them.
-
-Step 1: Upgrade Multer
-Since you got a warning about multer@1.4.4, upgrade it to the latest stable version:
-
-sh
-Copy
-Edit
-npm install multer@1.4.4-lts.1
+npm install multer@1.4.4
+mongodb must be 5.9.1
