@@ -6,9 +6,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useAuth } from '../../../auth/AuthContext';
 import { toast, ToastContainer } from "react-toastify";
 
-const Chatbot = () => {
+const Chatbot = ({ isOpen, onClose, className }) => {
     const { user } = useAuth();
-    const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState("");
@@ -353,21 +352,15 @@ const Chatbot = () => {
     };
 
     return (
-        <div className={`font-sans ${theme === "dark" ? "dark" : ""}`}>
-            {/* Chatbot Widget Container */}
+        <div className={`font-sans h-full flex flex-col ${theme === "dark" ? "dark" : ""} ${className}`}>
             <ToastContainer />
             {isOpen && (
-                <div
-                    ref={chatContainerRef}
-                    className={`fixed shadow-xl flex flex-col border overflow-hidden transform transition-all duration-300 ease-in-out ${theme === "dark"
-                        ? "bg-gray-900 border-gray-700"
-                        : "bg-white border-gray-100"
-                        }`}
-                    style={{
-                        ...getChatDimensions(),
-                        zIndex: 1000
-                    }}
+                <div className={`h-full flex flex-col shadow-xl border ${theme === "dark"
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-100"
+                    }`}
                 >
+
                     {/* Chat header */}
                     <div className={`p-3 sm:p-4 rounded-t-xl flex justify-between items-center ${theme === "dark"
                         ? "bg-gradient-to-r from-indigo-800 to-purple-800"
@@ -379,14 +372,7 @@ const Chatbot = () => {
                         </div>
                         <div className="flex items-center space-x-3">
                             <button
-                                onClick={() => setIsFullscreen(!isFullscreen)}
-                                className="text-white hover:text-gray-200 transition-colors cursor-pointer"
-                                title={isFullscreen ? "Minimize" : "Maximize"}
-                            >
-                                {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
-                            </button>
-                            <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={onClose}
                                 className="text-white hover:text-gray-200 transition-colors cursor-pointer"
                             >
                                 <X size={16} />
@@ -394,9 +380,9 @@ const Chatbot = () => {
                         </div>
                     </div>
 
+
                     {/* Messages container */}
-                    <div className={`flex-1 p-3 sm:p-4 overflow-y-auto ${theme === "dark" ? "bg-gray-800" : "bg-gray-50"
-                        }`}>
+                    <div className={`flex-1 p-3 sm:p-4 overflow-y-auto ${theme === "dark" ? "bg-gray-800" : "bg-gray-50"}`}>
                         {messages.length === 0 ? (
                             <div className={`flex flex-col items-center justify-center h-full text-center p-4 ${theme === "dark" ? "text-gray-300" : "text-gray-500"
                                 }`}>
@@ -589,8 +575,8 @@ const Chatbot = () => {
                     )}
 
                     {/* Input area */}
-                    <div className={`p-2 sm:p-3 border-t ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
-                        }`}>
+                    <div className={`p-2 sm:p-3 border-t ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}>
+
                         <div className={`flex items-center rounded-lg border ${theme === "dark" ? "border-gray-600" : "border-gray-300"
                             } focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition-all`}>
                             <button
@@ -640,23 +626,6 @@ const Chatbot = () => {
                     </div>
                 </div>
             )}
-
-            {/* Floating Chat Icon Button */}
-            <button
-                className={`cursor-pointer fixed bottom-4 right-4 h-14 w-14 sm:h-16 sm:w-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
-                    }`}
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                    boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.3)',
-                    zIndex: 999
-                }}
-            >
-                <MessageCircle size={20} className="text-white" />
-                <span className="absolute -top-1 -right-1 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-red-500 text-white text-[10px] sm:text-xs flex items-center justify-center animate-pulse">
-                    <span className="inline-block">AI</span>
-                </span>
-            </button>
 
             {/* Image Preview Modal */}
             {selectedImage && (
