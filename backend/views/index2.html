@@ -1,0 +1,231 @@
+<!-- <body>
+  <div class="loading">
+    <img src="http://a.top4top.net/p_1990j031.gif" alt="Loading" />
+  </div>
+  <div class="mouse original"></div>
+</body>
+
+
+
+<body>
+  <img
+    src="https://giffiles.alphacoders.com/133/133256.gif"
+    height="100%"
+    width="100%"
+    alt="Loading"
+  />
+</body>
+
+
+
+<body>
+  <div class="loading">
+  <img
+    src="https://www.netanimations.net/skeltw2.gif"
+    alt="Loading"
+  />
+</div>
+<div class="mouse original"></div>
+</body>
+
+
+
+<body>
+  <div class="loading">
+  <img
+    src="https://i.pinimg.com/originals/b4/d7/ae/b4d7ae4d801c20f8a7175a1bdb4fb856.gif"
+    alt="Loading"
+  />
+</div>
+<div class="mouse original"></div>
+</body>
+
+
+
+<body>
+  <img
+    src="https://pa1.aminoapps.com/5723/f0bdc5811f4ac16a84cbba205cbff8b9fca6b7e1_hq.gif"
+    height="100%"
+    width="100%"
+    alt="Loading"
+  />
+</body>
+
+
+<style>
+  * {
+    cursor: none;
+  }
+  body {
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0%;
+  }
+  .loading {
+    background-color: #ffffff;
+    display: fixed;
+  }
+  .loading img {
+    /* transform: scaleX(-1); */
+    display: block;
+    min-width: 200px;
+    min-height: 209px;
+  }
+  .mouse {
+    height: 25px;
+    width: 25px;
+    border-radius: 100%;
+    background-color: #fff782;
+    position: absolute;
+    animation: mouseAnimation 0.5s infinite ease-in-out alternate;
+    left: 0;
+    top: 0;
+  }
+  @keyframes mouseAnimation {
+    from {
+      width: 25px;
+      height: 25px;
+    }
+    to {
+      width: 15px;
+      height: 15px;
+    }
+  }
+</style>
+
+<script>
+  $(".loading").height($(window).height());
+  $(".loading").width($(window).width());
+  $(".loading img").css({
+    paddingTop: ($(".loading").height() - $(".loading img").height()) / 2,
+    paddingLeft: ($(".loading").width() - $(".loading img").width()) / 2,
+  });
+  $(window).resize(function () {
+    "use strict";
+    $(".loading").height($(window).height());
+    $(".loading").width($(window).width());
+    $(".loading img").css({
+      paddingTop: ($(".loading").height() - $(".loading img").height()) / 2,
+      paddingLeft: ($(".loading").width() - $(".loading img").width()) / 2,
+    });
+  });
+  $(window).mousemove(function (e) {
+    "use strict";
+    $(".original").css({
+      left: e.pageX - 16,
+      top: e.pageY - 16,
+    });
+  });
+  $("body").on("click", function (e) {
+    "use strict";
+    $(".original")
+      .clone(true)
+      .appendTo("body")
+      .css({
+        left: e.pageX - 16,
+        top: e.pageY - 16,
+      })
+      .removeClass("original");
+  });
+</script> -->
+
+<body>
+  <div class="loading">
+    <img src="http://a.top4top.net/p_1990j031.gif" alt="Loading" />
+  </div>
+  <div class="mouse original"></div>
+</body>
+
+<style>
+  * {
+    cursor: none;
+    box-sizing: border-box; /* Add for better sizing control */
+  }
+  body {
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0%;
+    width: 100vw;
+    height: 100vh;
+  }
+  .loading {
+    background-color: #ffffff;
+    position: fixed; /* Changed from 'display: fixed' to 'position: fixed' */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex; /* Center image with flexbox */
+    justify-content: center;
+    align-items: center;
+  }
+  .loading img {
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    display: block;
+  }
+  .mouse {
+    height: 25px;
+    width: 25px;
+    border-radius: 100%;
+    background-color: #fff782;
+    position: absolute;
+    animation: mouseAnimation 0.5s infinite ease-in-out alternate;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+  }
+  @keyframes mouseAnimation {
+    from {
+      width: 25px;
+      height: 25px;
+    }
+    to {
+      width: 15px;
+      height: 15px;
+    }
+  }
+  @media (max-width: 600px) {
+    .loading img {
+      width: 900px;
+      height: 900px;
+    }
+  }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    function resizeLoading() {
+      $(".loading").height($(window).height());
+      $(".loading").width($(window).width());
+    }
+
+    resizeLoading();
+    $(window).resize(resizeLoading);
+
+    $(window).mousemove(function (e) {
+      $(".original").css({
+        left: e.pageX - 16,
+        top: e.pageY - 16,
+      });
+    });
+
+    $("body").on("click", function (e) {
+      $(".original")
+        .clone(true)
+        .appendTo("body")
+        .css({
+          left: e.pageX - 16,
+          top: e.pageY - 16,
+        })
+        .removeClass("original");
+    });
+  });
+</script>

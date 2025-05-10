@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MERN Backend Server</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        perspective: 1000px;
+        font-family: "Arial", sans-serif;
+      }
+
+      .container {
+        font-size: 10px;
+        width: 60em;
+        height: 60em;
+        position: relative;
+        transform-style: preserve-3d;
+      }
+
+      .center-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8em;
+        height: 8em;
+        background: radial-gradient(circle, #61dafb, #4fa8d3);
+        border-radius: 50%;
+        box-shadow: 0 0 2em #61dafb, 0 0 4em #61dafb;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2em;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .orbit {
+        position: absolute;
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform-style: preserve-3d;
+      }
+
+      .orbit.mongo {
+        width: 30em;
+        height: 30em;
+        top: 15em;
+        left: 15em;
+        animation: orbit 6s linear infinite; 
+      }
+
+      .orbit.express {
+        width: 40em;
+        height: 40em;
+        top: 10em;
+        left: 10em;
+        animation: orbit 8s linear infinite;
+      }
+
+      .orbit.react {
+        width: 50em;
+        height: 50em;
+        top: 5em;
+        left: 5em;
+        animation: orbit 10s linear infinite;
+      }
+
+      .orbit.node {
+        width: 60em;
+        height: 60em;
+        top: 0em;
+        left: 0em;
+        animation: orbit 12s linear infinite;
+      }
+
+      .icon {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 4em;
+        height: 4em;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5em;
+        font-weight: bold;
+        transform: translateX(-50%);
+        box-shadow: 0 0 1em rgba(255, 255, 255, 0.2);
+      }
+
+      .icon img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .orbit.mongo .icon {
+        background: radial-gradient(circle, #4db33d, #3fa535);
+        transform-origin: center 17.5em;
+        transform: rotate(90deg) translateX(17.5em) rotate(-90deg);
+      }
+
+      .orbit.express .icon {
+        background: radial-gradient(circle, #ffa500, #cc8400);
+        transform-origin: center 24.5em;
+        transform: rotate(90deg) translateX(24.5em) rotate(-90deg);
+      }
+
+      .orbit.react .icon {
+        background: radial-gradient(circle, #61dafb, #4fa8d3);
+        transform-origin: center 31.5em;
+        transform: rotate(90deg) translateX(31.5em) rotate(-90deg);
+      }
+
+      .orbit.node .icon {
+        background: radial-gradient(circle, #8cc84b, #6da432);
+        transform-origin: center 38.5em;
+        transform: rotate(90deg) translateX(38.5em) rotate(-90deg);
+      }
+
+      @keyframes orbit {
+        to {
+          transform: rotateZ(360deg);
+        }
+      }
+      @media (max-width: 768px) {
+        .container {
+          width: 30em;
+          height: 30em;
+        }
+        .center-logo {
+          width: 5em;
+          height: 5em;
+          font-size: 1.5em;
+        }
+        .orbit.mongo {
+          width: 15em;
+          height: 15em;
+          top: 7.5em;
+          left: 7.5em;
+        }
+        .orbit.express {
+          width: 20em;
+          height: 20em;
+          top: 5em;
+          left: 5em;
+        }
+        .orbit.react {
+          width: 25em;
+          height: 25em;
+          top: 2.5em;
+          left: 2.5em;
+        }
+        .orbit.node {
+          width: 30em;
+          height: 30em;
+          top: 0;
+          left: 0;
+        }
+        .icon {
+          width: 2.5em;
+          height: 2.5em;
+          font-size: 1em;
+        }
+        .orbit.mongo .icon {
+          background: radial-gradient(circle, #4db33d, #3fa535);
+          transform-origin: center 13.5em;
+          transform: rotate(90deg) translateX(13.5em) rotate(-90deg);
+        }
+
+        .orbit.express .icon {
+          background: radial-gradient(circle, #ffa500, #cc8400);
+          transform-origin: center 18.5em;
+          transform: rotate(90deg) translateX(18.5em) rotate(-90deg);
+        }
+
+        .orbit.react .icon {
+          background: radial-gradient(circle, #61dafb, #4fa8d3);
+          transform-origin: center 23.5em;
+          transform: rotate(90deg) translateX(23.5em) rotate(-90deg);
+        }
+
+        .orbit.node .icon {
+          background: radial-gradient(circle, #8cc84b, #6da432);
+          transform-origin: center 28.5em;
+          transform: rotate(90deg) translateX(28.5em) rotate(-90deg);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          width: 20em;
+          height: 20em;
+        }
+        .center-logo {
+          width: 4em;
+          height: 4em;
+          font-size: 1.2em;
+        }
+        .orbit.mongo {
+          width: 10em;
+          height: 10em;
+          top: 5em;
+          left: 5em;
+        }
+        .orbit.express {
+          width: 13em;
+          height: 13em;
+          top: 3.5em;
+          left: 3.5em;
+        }
+        .orbit.react {
+          width: 16em;
+          height: 16em;
+          top: 2em;
+          left: 2em;
+        }
+        .orbit.node {
+          width: 20em;
+          height: 20em;
+          top: 0;
+          left: 0;
+        }
+        .icon {
+          width: 2em;
+          height: 2em;
+          font-size: 0.9em;
+        }
+        .icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+        .orbit.mongo .icon {
+          background: radial-gradient(circle, #4db33d, #3fa535);
+          transform-origin: center 9.75em;
+          transform: rotate(90deg) translateX(9.75em) rotate(-90deg);
+        }
+
+        .orbit.express .icon {
+          background: radial-gradient(circle, #ffa500, #cc8400);
+          transform-origin: center 13.5em;
+          transform: rotate(90deg) translateX(13.5em) rotate(-90deg);
+        }
+
+        .orbit.react .icon {
+          background: radial-gradient(circle, #61dafb, #4fa8d3);
+          transform-origin: center 17.25em;
+          transform: rotate(90deg) translateX(17.25em) rotate(-90deg);
+        }
+
+        .orbit.node .icon {
+          background: radial-gradient(circle, #8cc84b, #6da432);
+          transform-origin: center 21.5em;
+          transform: rotate(90deg) translateX(21.5em) rotate(-90deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="center-logo">MERN</div>
+      <div class="orbit mongo">
+        <div class="icon">
+          <img src="/m.jpg" alt="M" />
+        </div>
+      </div>
+      <div class="orbit express">
+        <div class="icon">
+          <img src="/e.jpg" alt="E" />
+        </div>
+      </div>
+      <div class="orbit react">
+        <div class="icon">
+          <img src="/r.jpg" alt="R" />
+        </div>
+      </div>
+      <div class="orbit node">
+        <div class="icon">
+          <img src="/n.jpg" alt="N" />
+        </div>
+      </div>
+      <!-- <div class="orbit node">
+        <div class="icon">N</div>
+      </div> -->
+    </div>
+  </body>
+</html>

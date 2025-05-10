@@ -1,0 +1,221 @@
+import express from "express";
+import cookieParser from "cookie-parser";
+import Project from "../models/Projects.js";
+import { deleteFileFromGridFS } from "../routes/gridFsRoutes.js";
+import mongoose from "mongoose";
+import IndustryRepresentative from "../models/Industry.js";
+import dotenv from 'dotenv';
+dotenv.config();
+
+
+const router = express.Router();
+router.use(cookieParser());
+
+router.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+router.post("/AddProject", express.json(), async (req, res) => {
+    console.log("📥 Received Data:", req.body);
+    try {
+        const {
+            title,
+            description,
+            projectType,
+            representativeId,
+            industryName,
+            difficultyLevel,
+            selection,
+            requiredSkills,
+            additionalInfo,
+            duration,
+            maxGroups,
+            attachments
+        } = req.body;
+
+        if (!title || !description || !projectType || !representativeId || !difficultyLevel || !duration) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        let parsedDuration;
+        try {
+            parsedDuration = typeof duration === "string" ? JSON.parse(duration) : duration;
+        } catch (err) {
+            return res.status(400).json({ error: "Invalid duration format" });
+        }
+
+
+        let parsedAttachments = [];
+        try {
+            parsedAttachments = JSON.parse(attachments || "[]");
+        } catch (err) {
+            return res.status(400).json({ error: "Invalid attachments format" });
+        }
+
+        let parsedRequiredSkills = [];
+        try {
+            parsedRequiredSkills = typeof requiredSkills === "string" ? JSON.parse(requiredSkills) : requiredSkills;
+        } catch (err) {
+            return res.status(400).json({ error: "Invalid requiredSkills format" });
+        }
+
+        console.log("📎 Processed Attachments:", parsedAttachments);
+
+        const newProject = new Project({
+            _id: `proj${Date.now()}`,
+            title,
+            description,
+            type: selection,
+            projectType,
+            difficultyLevel,
+            requiredSkills: parsedRequiredSkills,
+            additionalInfo,
+            duration: parsedDuration,
+            representativeId,
+            industryName,
+            attachments: parsedAttachments,
+            ...(selection === "Group" && { maxGroups }),
+        });
+
+        const savedProject = await newProject.save();
+        await IndustryRepresentative.updateOne(
+            { _id: representativeId },
+            { $push: { postedProjects: savedProject._id } }
+        );
+
+        res.status(201).json({ message: "Project added successfully", project: savedProject });
+    } catch (error) {
+        console.error("❌ Error saving project:", error);
+        res.status(500).json({ error: "Failed to add project. Please try again." });
+    }
+});
+
+
+
+router.get("/fetchProjectDetailsByIds", async (req, res) => {
+    try {
+        const { ids } = req.query;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ message: "Project IDs are required and should be an array" });
+        }
+
+        const projects = await Project.find({ _id: { $in: ids } });
+        if (!projects || projects.length === 0) {
+            return res.status(404).json({ message: "No projects found" });
+        }
+
+        res.status(200).json({ projects });
+    } catch (error) {
+        console.error("Error fetching project details:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+
+
+
+router.put("/updateProject/:id", async (req, res) => {
+    const { id } = req.params; 
+    const updatedData = req.body; 
+
+    try {
+        const updatedProject = await Project.findByIdAndUpdate(id, updatedData, {
+            new: true, 
+            runValidators: true, 
+        });
+
+        if (!updatedProject) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        res.status(200).json({ message: "Project updated successfully", updatedProject });
+    } catch (error) {
+        console.error("Error updating project:", error);
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+
+
+router.delete("/deleteProject/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const project = await Project.findById(id);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        
+        if (project.attachments && project.attachments.length > 0) {
+            for (const attachment of project.attachments) {
+                await deleteFileFromGridFS(attachment.fileUrl);
+            }
+        }
+
+        
+        await Project.findByIdAndDelete(id);
+
+        
+        await IndustryRepresentative.updateOne(
+            { _id: project.representativeId },
+            { $pull: { postedProjects: id } }
+        );
+
+        res.status(200).json({ message: "Project and associated files deleted successfully" });
+    } catch (error) {
+        console.error("❌ Error deleting project:", error);
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+
+router.get("/fetchProjectDetailById/:id", async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error });
+    }
+});
+
+
+router.get("/getMyProjects", async (req, res) => {
+    try {
+        const { representativeId } = req.query; 
+        if (!representativeId) {
+            return res.status(400).json({ message: "Representative ID is required" });
+        }
+
+        
+        const projects = await Project.find({ representativeId });
+
+        res.status(200).json(projects);
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+});
+
+
+
+router.get("/getAllProjects", async (req, res) => {
+    try {
+        
+        const projects = await Project.find();
+
+        res.status(200).json(projects);
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+});
+
+
+
+
+export default router;

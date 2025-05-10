@@ -1,0 +1,323 @@
+*Project 2:*
+Getting Final Year Project (FYP) from industry is not an easy job for the students and teachers. We want to build a web based
+portal system where students, teachers and industry will have access. The industry representative will post a FYP idea on the portal,
+teach will go through it and either will approve it or will ask for more information from industry representatives. Once its approved
+by panel of teachers, it will get listed for the final semester students looking for FYP. Any student can grab the project and further
+project status can be managed with the portal. Where teachers and industry representatives can view current status of the project.
+
+
+creation cammands:
+
+// backend
+ - > mkdir CollaborativeEdge && cd CollaborativeEdge
+ - > mkdir ce-backend && cd ce-backend
+ - > npm init -y
+ - > npm install express cors dotenv mongoose
+ - > npm install --save-dev nodemon
+ - > package.json = add "type": "module",
+ - > caan rename to ce-backend to any, like backend
+
+//frontend
+ - > npm create vite@latest collaborative-edge -- --template react
+
+
+
+1. Users Collection (General)
+
+{
+  "_id": "numl-f21-40813@numls.edu.pk",
+  "username": "Umair",
+  "email": "numl-f21-40813@numls.edu.pk",
+  "password": "$2a$10$OyndCNou7vLDqZpb2TClM.1acz1eL70WWYvDVMT.P2wl5acTtcqnu",
+  "profilePic": "https://th.bing.com/th/id/OIP.cEie_pmgXcu1Blpul3mrfgHaFjrs=1&pid=ImgDetMain",
+  "role": "student", // Enum: ["student", "teacher", "industry"]
+  "status": "pending", // Enum: ["verified", "pending", "banned"]
+  "createdAt": "2025-01-20T11:16:39.345Z",
+  "updatedAt": "2025-01-20T11:16:39.345Z"
+}
+
+2. Students Collection (Separate)
+
+{
+  "_id": "numl-f21-40813@numls.edu.pk", // Same as user's _id
+  "studentId": "numl-f21-40813",
+  "degreeOrProgram": "BSc Software Engineering",
+  "yearOfStudy": 2025,
+  "university": "National University of Modern Languages (NUML)",
+  "verified": false,
+  "verificationDocuments": [
+    {
+      "fileName": "student_id_card.jpg",
+      "fileUrl": "https://storage.example.com/student_id_card.jpg",
+      "uploadedAt": "2025-01-20T12:00:00.000Z"
+    },
+  ],
+  "createdAt": "2025-01-20T11:16:39.345Z",
+  "updatedAt": "2025-01-20T11:16:39.345Z",
+  "verifiedAt": null,
+  "verifiedBy": null
+}
+
+3. Teachers Collection (Separate)
+
+{
+  "_id": "teacher@gmail.com",
+  "employeeId": "CS-AP-001",
+  "designation": "Associate Professor",
+  "department": "Computer Science",
+  "university": "National University of Modern Languages (NUML)",
+  "verified": false, 
+  "verificationDocuments": [
+    {
+      "fileName": "employment_letter.pdf",
+      "fileUrl": "https://storage.example.com/employment_letter.pdf",
+      "uploadedAt": "2025-01-15T10:00:00.000Z"
+    },
+  ],
+  "createdAt": "2025-01-20T11:16:39.345Z",
+  "updatedAt": "2025-01-20T11:16:39.345Z",
+  "verifiedAt": "2025-01-16T12:00:00.000Z",
+  "verifiedBy": "admin@university.edu"
+}
+
+4. Industry Representative Collection (Separate)
+
+{
+  "_id": "industry@gmail.com",
+  "representingIndustries": [
+    {
+      "industryId": "ind123",
+      "name": "Tech Solutions",
+      "website": "https://techsolutions.com",
+      "address": "123 Tech Park, Islamabad, Pakistan",
+      "designation": "Project Manager",
+      "workEmail": "johndoe@techsolutions.com",
+      "companyContactNumber": "+92-300-9876543",
+      "verified": false,
+      "verificationDocuments": [
+        {
+          "fileName": "business_card.jpg",
+          "fileUrl": "https://storage.example.com/business_card.jpg",
+          "uploadedAt": "2025-01-20T12:00:00.000Z"
+        },
+      ]
+    }
+  ],
+  "createdAt": "2025-01-20T11:16:39.345Z",
+  "updatedAt": "2025-01-20T11:16:39.345Z",
+  "verifiedAt": null,
+  "verifiedBy": null
+}
+
+5. Projects Collection
+
+{
+  "_id": "proj123",
+  "title": "AI-based Facial Recognition",
+  "description": "This project involves building a facial recognition system using AI algorithms.",
+  "projectType": "Artificial Intelligence",
+  "difficultyLevel": "Advanced",
+  "requiredSkills": [
+    "Python",
+    "Machine Learning",
+    "OpenCV"
+  ],
+  "additionalInfo": "abcd....",
+  "maxGroups": 10,
+  "status": "approved", // Enum: ["pending", "approved", "rejected", "needMoreInfo"]
+  "duration": {
+    "startDate": "2025-02-01",
+    "endDate": "2025-06-30"
+  },
+  "industryName": "ind123", //belong to which industry
+  "representativeId": "umairhabibabc19@gmail.com",
+  "attachments": [ // Supporting documents
+    {
+      "fileName": "project_proposal.pdf",
+      "fileUrl": "https://storage.example.com/project_proposal.pdf",
+      "uploadedAt": "2025-01-20T12:00:00.000Z"
+    },
+  ],
+  "createdAt": "2025-01-20T11:16:39.345Z",
+  "updatedAt": "2025-01-22T11:30:00.345Z"
+}
+
+6. Teacher Approvals in a Separate Collection
+
+{
+  "_id": "proj123",
+  "approvals": [
+    {
+      "teacherId": "teacher1@university.edu",
+      "fullName": "Dr. Sarah Khan",
+      "status": "approved",
+      "university": "NUML",
+      "comments": "Looks good, ready for student selection.",
+      "actionAt": "2025-01-21T09:00:00.000Z"
+    },
+    {
+      "teacherId": "teacher2@university.edu",
+      "fullName": "Dr. Sarwar",
+      "status": "needMoreInfo",
+      "university": "NUST",
+      "comments": "need more info.........",
+      "actionAt": "2025-01-21T09:00:00.000Z"
+    },
+    {
+      "teacherId": "teacher3@university.edu",
+      "fullName": "Dr. Umair",
+      "status": "rejected",
+      "university": "LUMS",
+      "comments": "not for us.......",
+      "actionAt": "2025-01-21T09:00:00.000Z"
+    },
+  ],
+}
+
+7. Teacher Supervision in a Separate Collection
+
+{
+  "_id": "proj1741346022964",
+  "supervisedBy": [
+    {
+      "teacherId": "teacher1@university.edu",
+      "fullName": "Dr. Sarah Khan",
+      "university": "NUML",
+      "responseFromInd": {
+        "status": "approved", 
+        "comments": "Supervision accepted by industry.",
+        "actionedAt": "2025-01-21T09:00:00.000Z"
+      }
+    },
+    {
+      "teacherId": "teacher2@university.edu",
+      "fullName": "Dr. Sarwar",
+      "university": "NUST",
+      "responseFromInd": {
+        "status": "pending", 
+        "comments": null,
+        "actionedAt": null
+      }
+    },
+    {
+      "teacherId": "teacher3@university.edu",
+      "fullName": "Dr. Umair",
+      "university": "LUMS",
+      "responseFromInd": {
+        "status": "rejected", 
+        "comments": "Industry does not require this supervision.",
+        "actionedAt": "2025-01-21T09:00:00.000Z"
+      }
+    }
+  ]
+}
+
+
+
+8. Student Selections in a Separate Collection
+
+{
+  "_id": "proj123",
+  "studentSelection": [
+    {
+      "selectionId": "group_sel_001",
+      "groupLeader": "Dr. hammad",  //one who applied first in this selection
+      "groupMembers": ["Dr. hammad", "person2", "person3"],
+      "university": "numl",
+      "joinedAt": "2025-01-22T10:30:00.000Z",  //when first student applied
+      "isCompleted" : true/false,
+      "completedAt" :  "2025-01-22T10:30:00.000Z",
+    },
+     {
+      "selectionId": "group_sel_010",
+      "groupLeader": "Dr. khan",  //one who applied first in this selection
+      "groupMembers": ["Dr. khan", "person2", "person3"],
+      "university": "numl",
+      "joinedAt": "2025-01-22T10:30:00.000Z"  //when first student applied
+       "isCompleted" : true/false,
+      "completedAt" :  "2025-01-22T10:30:00.000Z",
+    },
+     {
+      "selectionId": "group_sel_015",
+      "groupLeader": "Dr. salman",  //one who applied first in this selection
+      "groupMembers": ["Dr. salman", "person2", "person3"],
+      "university": "numl",
+      "joinedAt": "2025-01-22T10:30:00.000Z"  //when first student applied
+       "isCompleted" : true/false,
+      "completedAt" :  "2025-01-22T10:30:00.000Z",
+    },
+  ],
+}
+
+
+
+9. Submissions Collection
+student submit project after completion
+
+{
+  "_id": "proj123",
+  "selectionId": "group_sel_001",
+  "submissions": [
+    {
+      "submissionId": "sub_001",
+      "submittedById": "numl-f21-40813@numls.edu.pk", // Student ID
+      "submittedByName": "Umair Habib", // Student Name
+      "files": [
+        {
+          "fileName": "final_report_v1.pdf",
+          "fileUrl": "https://storage.example.com/final_report_v1.pdf",
+          "uploadedAt": "2025-05-15T12:00:00.000Z"
+        },
+      ],
+      "comments": "Initial submission for review.",
+      "submittedAt": "2025-05-15T12:00:00.000Z",
+    },
+    {
+      "submissionId": "sub_002",
+      "submittedById": "numl-f21-40813@numls.edu.pk", // Student ID
+      "submittedByName": "Umair Habib", // Student Name
+      "files": [
+        {
+          "fileName": "final_report_v2.pdf",
+          "fileUrl": "https://storage.example.com/final_report_v2.pdf",
+          "uploadedAt": "2025-05-30T12:00:00.000Z"
+        },
+      ],
+      "comments": "Final submission after revisions.",
+      "submittedAt": "2025-05-30T12:00:00.000Z",
+    }
+  ],
+  "totalSubmissions": 2, // Quick access to the number of submissions
+  "lastSubmittedAt": "2025-05-30T12:00:00.000Z" // Timestamp of the latest submission
+}
+
+
+10. Reviews Collection
+Stores reviews for groups...
+
+
+{
+  "_id": "rev123",
+  "projectId": "proj123",  // Links to the project being reviewed
+  "selectionId": "group_sel_001", // Links to the selection being reviewed on which project
+  "reviews": [
+    {
+      "reviewerId": "teacher1@university.edu",
+      "reviewerRole": "teacher", // Enum: ["teacher", "industry"]
+      "fullName": "Dr. Sarah Khan",
+      "comments": "Great project, but needs better documentation.",
+      "rating": 4.5, // Scale: 1-5
+      "reviewedAt": "2025-06-05T14:00:00.000Z"
+    },
+    {
+      "reviewerId": "industry1@university.edu",
+      "reviewerRole": "industry", // Enum: ["teacher", "industry"]
+      "fullName": "Mr. Sarah Khan",
+      "comments": "Great project, but needs better documentation.",
+      "rating": 4.5, // Scale: 1-5
+      "reviewedAt": "2025-06-05T14:00:00.000Z"
+    }
+  ],
+  "averageRating": 4.75, // (Optional) Calculated field based on all reviews
+  "totalReviews": 2 // Number of reviews for quick access
+}

@@ -1,0 +1,17 @@
+.neon-button::before {
+  content: "";
+  position: absolute;
+  width: 400%;
+  height: 400%;
+  top: -200%;
+  left: -200%;
+  background: linear-gradient(45deg, #ff0000, #ff7300, #ffeb00, #00ff00, #00ffee, #0000ff, #aa00ff, #ff007b);
+  z-index: -1;
+  transition: 0.5s ease-in-out;
+  animation: neon-animation 5s linear infinite;
+}
+
+@keyframes neon-animation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

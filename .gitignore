@@ -1,0 +1,10 @@
+.env
+.DS_Store
+.vscode/
+.idea/
+node_modules
+node_modules/
+/!.http
+/.http
+*.http
+package-lock.json
