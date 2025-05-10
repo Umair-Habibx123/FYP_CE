@@ -451,6 +451,8 @@ const TeacherRegister = () => {
                                 setCode={setCode}
                                 handleVerifyCode={handleVerifyCode}
                                 loading={loading}
+                                handleSendCode={handleSendCode}
+
                             />
                         </>
                     )}

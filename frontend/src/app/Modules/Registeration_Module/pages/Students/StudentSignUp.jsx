@@ -457,6 +457,7 @@ const StudentRegister = () => {
                                 setCode={setCode}
                                 handleVerifyCode={handleVerifyCode}
                                 loading={loading}
+                                handleSendCode={handleSendCode}
                             />
                         </>
                     )}

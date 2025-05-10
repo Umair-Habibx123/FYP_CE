@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Contact Submission - Collaborative Edge</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+          "Helvetica Neue", sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        line-height: 1.6;
+      }
+      .email-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+      .email-header {
+        background: linear-gradient(135deg, #4a90e2 0%, #2b6cb0 100%);
+        color: #ffffff;
+        text-align: center;
+        padding: 30px 20px;
+      }
+      .email-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .email-content {
+        padding: 30px;
+      }
+      .email-content h2 {
+        color: #2b6cb0;
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+      .info-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        margin: 20px 0;
+      }
+      .email-footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #718096;
+        background-color: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+      }
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          margin: 10px;
+          border-radius: 8px;
+        }
+        .email-header {
+          padding: 25px 15px;
+        }
+        .email-header h1 {
+          font-size: 24px;
+        }
+        .email-content {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <div class="logo">CollaborativeEdge</div>
+        <h1>New Contact Form Submission</h1>
+      </div>
+
+      <div class="email-content">
+        <h2>You've received a new message</h2>
+        <p>Here are the details from the contact form submission:</p>
+
+        <div class="info-box">
+          <p><strong>From:</strong> {{name}}</p>
+          <p><strong>Email:</strong> <a href="mailto:{{email}}">{{email}}</a></p>
+          <p><strong>Subject:</strong> {{subject}}</p>
+          <p><strong>Received:</strong> {{dated}}</p>
+        </div>
+
+        <h3>Message Content:</h3>
+        <div class="info-box" style="white-space: pre-line">{{message}}</div>
+
+        <div style="text-align: center; margin-top: 30px">
+          <a
+            href="mailto:{{email}}"
+            style="
+              display: inline-block;
+              background: linear-gradient(135deg, #4a90e2 0%, #2b6cb0 100%);
+              color: #ffffff;
+              padding: 14px 28px;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 600;
+            "
+            >Reply to {{name}}</a
+          >
+        </div>
+      </div>
+
+      <div class="email-footer">
+        <p>&copy; 2025 Collaborative Edge. All rights reserved.</p>
+        <p>
+          This message was automatically generated from your website contact
+          form.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -459,6 +459,7 @@ const IndustryRepresentativeRegister = () => {
                     setCode={setCode}
                     handleVerifyCode={handleVerifyCode}
                     loading={loading}
+                    handleSendCode={handleSendCode}
                 />
             )}
 

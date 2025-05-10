@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message Received - Collaborative Edge</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+          "Helvetica Neue", sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        line-height: 1.6;
+      }
+      .email-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+      .email-header {
+        background: linear-gradient(135deg, #4a90e2 0%, #2b6cb0 100%);
+        color: #ffffff;
+        text-align: center;
+        padding: 30px 20px;
+      }
+      .email-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .email-content {
+        padding: 30px;
+      }
+      .email-content h2 {
+        color: #2b6cb0;
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+      .info-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        margin: 20px 0;
+      }
+      .contact-methods {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 25px 0;
+      }
+      .contact-method {
+        flex: 1;
+        min-width: 200px;
+        background: #f0f4f8;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .email-footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #718096;
+        background-color: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+      }
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          margin: 10px;
+          border-radius: 8px;
+        }
+        .email-header {
+          padding: 25px 15px;
+        }
+        .email-header h1 {
+          font-size: 24px;
+        }
+        .email-content {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <div class="logo">CollaborativeEdge</div>
+        <h1>Thank You for Contacting Us</h1>
+      </div>
+
+      <div class="email-content">
+        <h2>Hello {{name}},</h2>
+        <p>
+          We've received your message regarding
+          <strong>"{{subject}}"</strong> and our team will get back to you within
+          24-48 hours.
+        </p>
+
+        <div class="info-box">
+          <h3>Your Message:</h3>
+          <p style="white-space: pre-line">{{message}}</p>
+        </div>
+
+        <h3>Need Immediate Assistance?</h3>
+        <div class="contact-methods">
+          <div class="contact-method">
+            <h4>📧 Email Us</h4>
+            <p>{{contactMail}}</p>
+          </div>
+          <div class="contact-method">
+            <h4>📞 Call Us</h4>
+            <p>(123) 456-7890</p>
+            <small>Mon-Fri, 9AM-5PM</small>
+          </div>
+        </div>
+
+        <p>For reference, here are the details we received:</p>
+        <ul>
+          <li><strong>Your Name:</strong> {{name}}</li>
+          <li><strong>Your Email:</strong> {{email}}</li>
+          <li><strong>Submitted:</strong> {{dated}}</li>
+        </ul>
+      </div>
+
+      <div class="email-footer">
+        <p>&copy; 2025 Collaborative Edge. All rights reserved.</p>
+        <p>This is an automated response. Please do not reply to this email.</p>
+      </div>
+    </div>
+  </body>
+</html>

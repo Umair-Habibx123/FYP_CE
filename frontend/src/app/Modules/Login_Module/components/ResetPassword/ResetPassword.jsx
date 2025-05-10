@@ -20,8 +20,9 @@ const ResetPassword = () => {
                 }
                 setIsTokenValid(true);
             } catch (error) {
-                setMessage({ type: "error", text: error || "Something went wrong. Try again." });
-                toast.error(error.message || "Invalid or expired token. Redirecting...");
+                const errorMessage = error instanceof Error ? error.message : "Invalid or expired token";
+                setMessage({ type: "error", text: errorMessage });
+                toast.error(errorMessage + " Redirecting...");
                 setIsTokenValid(false);
                 setTimeout(() => navigate("/"), 3000);
             }
@@ -30,17 +31,19 @@ const ResetPassword = () => {
         if (token) {
             validateToken();
         } else {
-            toast.error("Missing token. Redirecting...");
+            const errorMessage = "Missing token";
+            setMessage({ type: "error", text: errorMessage });
+            toast.error(errorMessage + " Redirecting...");
             setTimeout(() => navigate("/"), 3000);
         }
     }, [token, navigate]);
 
-
     const handleReset = async () => {
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,12}$/;
         if (!passwordRegex.test(password)) {
-            toast.error("Password must be 6-12 chars, including a letter, number & special character.");
-            setMessage({ type: "error", text: "Password must be 6-12 characters and include a letter, number, and special character." });
+            const errorMessage = "Password must be 6-12 chars, including a letter, number & special character.";
+            toast.error(errorMessage);
+            setMessage({ type: "error", text: errorMessage });
             return;
         }
 
@@ -57,16 +60,19 @@ const ResetPassword = () => {
             const result = await response.json();
 
             if (response.ok) {
-                toast.success("Password reset successful! Redirecting...");
-                setMessage({ type: "success", text: "Password reset successful!" });
+                const successMessage = "Password reset successful!";
+                toast.success(successMessage + " Redirecting...");
+                setMessage({ type: "success", text: successMessage });
                 setTimeout(() => navigate("/login"), 2000);
             } else {
-                setMessage({ type: "error", text: result.error });
-                toast.error(result.error);
+                const errorMessage = result.error || "Failed to reset password";
+                setMessage({ type: "error", text: errorMessage });
+                toast.error(errorMessage);
             }
         } catch (error) {
-            setMessage({ type: "error", text: error || "Something went wrong. Try again." });
-            toast.error("Something went wrong. Try again.");
+            const errorMessage = error instanceof Error ? error.message : "Something went wrong. Try again.";
+            setMessage({ type: "error", text: errorMessage });
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -79,7 +85,6 @@ const ResetPassword = () => {
                 <h2 className="text-3xl font-extrabold text-center text-gray-900">Reset Password</h2>
                 <p className="text-gray-500 text-center text-sm mt-2">Enter a new password to secure your account.</p>
                 {message && <p className={`mt-3 text-sm text-center ${message.type === "success" ? "text-green-500" : "text-red-500"}`}>{message.text}</p>}
-
 
                 <div className="mt-6">
                     <input
