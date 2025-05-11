@@ -385,7 +385,7 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                                                 </div>
 
                                                 {supervisor.responseFromInd.comments && supervisor.responseFromInd.comments !== "null" && (
-                                                    <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-600 rounded-lg">
+                                                    <div className={`mt-3 p-3 bg-gray-100 ${theme === "dark" ? "bg-gray-600" : "bg-gray-100"} rounded-lg`}>
                                                         <p className="text-sm italic">{supervisor.responseFromInd.comments}</p>
                                                     </div>
                                                 )}

@@ -6,14 +6,20 @@ import Loading from "../../../../Components/loadingIndicator/loading";
 import { AlertTriangle, Search, ShieldAlert, Mail } from "lucide-react";
 
 const PrivacyPolicy = () => {
-    const { user } = useAuth();
+    const { user, isAuthLoading } = useAuth();
     const [policy, setPolicy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [initialLoad, setInitialLoad] = useState(true); // Track initial load
 
     useEffect(() => {
+        if (isAuthLoading) return;
+
         const fetchPrivacyPolicy = async () => {
             try {
+                setLoading(true);
+                setError(null);
+
                 // var roleToFetch = "main";
 
                 // if (user?.role === "industry") {
@@ -45,13 +51,16 @@ const PrivacyPolicy = () => {
                 setError("Failed to load privacy policy. Please try again later.");
             } finally {
                 setLoading(false);
+                setInitialLoad(false);
             }
         };
+        if (initialLoad || policy === null) {
+            fetchPrivacyPolicy();
+        }
 
-        fetchPrivacyPolicy();
-    }, [user]);
+    }, [user, isAuthLoading, initialLoad]);
 
-    if (loading) {
+     if (isAuthLoading || (loading && initialLoad)) {
         return <Loading />;
     }
 

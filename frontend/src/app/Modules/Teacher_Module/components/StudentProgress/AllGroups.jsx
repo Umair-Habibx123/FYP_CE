@@ -38,10 +38,16 @@ const AllGroups = () => {
                 if (projectData.message === "Project not found") {
                     setProject("Project not found");
                     setInvalidProjectSearch(true);
+                    setIsLoading(false);
                     return; // Exit early if project not found
                 }
 
-                setProject(projectData);
+                // Set initial project data
+                setProject(prev => ({
+                    ...prev,
+                    ...projectData,
+                    studentSelection: [] // Initialize empty array for groups
+                }));
 
                 // 2. Check teacher supervision status if user data is available
                 if (user?.email && user?.teacherDetails?.university) {
@@ -60,31 +66,51 @@ const AllGroups = () => {
 
                         // 3. Only fetch detailed project info if access is granted
                         if (canAccessNow) {
-                            const detailsResponse = await axios.get(
-                                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getAllSelectionGroupsForTeachers`,
-                                {
-                                    params: {
-                                        university: user.teacherDetails.university,
-                                        projectId
+                            try {
+                                const detailsResponse = await axios.get(
+                                    `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getAllSelectionGroupsForTeachers`,
+                                    {
+                                        params: {
+                                            university: user.teacherDetails.university,
+                                            projectId
+                                        }
                                     }
-                                }
-                            );
+                                );
 
-                            if (detailsResponse.data?.message === "No matching selection groups found") {
-                                setProject(prev => ({
-                                    ...prev,
-                                    studentSelection: []
-                                }));
-                            } else {
-                                setProject(detailsResponse.data);
+                                if (detailsResponse.data?.message === "No matching selection groups found") {
+                                    // Keep existing project data but with empty studentSelection
+                                    setProject(prev => ({
+                                        ...prev,
+                                        studentSelection: []
+                                    }));
+                                } else {
+                                    // Merge new data with existing project data
+                                    setProject(prev => ({
+                                        ...prev,
+                                        ...detailsResponse.data
+                                    }));
+                                }
+                            } catch (err) {
+                                console.error("Error fetching groups:", err);
+                                if (err.response?.status === 404 && err.response.data?.message === "No matching selection groups found") {
+                                    // No groups found is not an error - just set empty array
+                                    setProject(prev => ({
+                                        ...prev,
+                                        studentSelection: []
+                                    }));
+                                } else {
+                                    // Real error occurred
+                                    setError("Failed to load group data");
+                                }
                             }
                         }
                     } catch (err) {
-                        console.error("Error in teacher-specific requests:", err);
+                        console.error("Error checking supervision status:", err);
+                        setCanAccess(false);
                         if (err.response?.status === 404) {
-                            setCanAccess(false);
+                            setError("You are not approved to supervise this project");
                         } else {
-                            setError("Failed to load teacher-specific data");
+                            setError("Failed to verify your access permissions");
                         }
                     }
                 }

@@ -69,7 +69,7 @@ const Footer = () => {
                             <ul className="space-y-4">
                                 {[
                                     { icon: <MapPin size={20} className="text-blue-500" />, text: "123 Street, Islamabad, Pakistan" },
-                                    { icon: <Mail size={20} className="text-blue-500" />, text: "info@collaborateedge.pk" },
+                                    { icon: <Mail size={20} className="text-blue-500" />, text: "collaborateedgeofficials@gmail.com" },
                                     { icon: <Phone size={20} className="text-blue-500" />, text: "+92 (234) 567-1234" }
                                 ].map((contact, index) => (
                                     <li key={index} className="flex items-start gap-3">

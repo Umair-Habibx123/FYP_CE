@@ -128,16 +128,19 @@ const TeacherStatsChart = ({ data, theme }) => {
             {
                 label: 'Teacher Reviews',
                 data: data.ratingStats.teacherReviews.distribution.map(item => item.count),
-                backgroundColor: Object.values(palette.stars),
+                backgroundColor: palette.teacherReviews,
                 borderColor: palette.background,
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 6 
             },
             {
                 label: 'Industry Reviews',
                 data: data.ratingStats.industryReviews.distribution.map(item => item.count),
-                backgroundColor: Object.values(palette.stars).map(color => color.replace('0.8', '0.5')),
+                backgroundColor: palette.industryReviews,
                 borderColor: palette.background,
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 6
+
             }
         ]
     };

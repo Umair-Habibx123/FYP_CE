@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import RolePieChart from "../overview/Charts/RolePieChart.jsx";
 import { useReactTable, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
-import { Activity, Plus, Filter, ChevronRight, ChevronsLeft, ArrowDown, ArrowUp, FolderSearch, Search, PieChart, FileSpreadsheet, FileText, UserCog, X, UserPlus, ChevronsRight, ChevronLeft, ArrowUpDown , Eye, Edit, Loader2, UserCircle2 } from "lucide-react";
+import { Activity, Plus, Filter, ChevronRight, ChevronsLeft, ArrowDown, ArrowUp, FolderSearch, Search, PieChart, FileSpreadsheet, FileText, UserCog, X, UserPlus, ChevronsRight, ChevronLeft, ArrowUpDown, Eye, Edit, Loader2, UserCircle2 } from "lucide-react";
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
 import ViewModal from "./Modal/view_modal.jsx";
 import { useNavigate } from "react-router-dom";
@@ -37,11 +37,13 @@ const UserManagement = ({ theme }) => {
             username: user.username,
             email: user.email,
             password: user.password,
-            profilePic: user.profilePic || "N/A",
+            profilePic: user.profilePic
+                ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${user.profilePic}`
+                : "N/A",
             role: user.role,
             status: user.status,
-            createdAt: user.createdAt?.$date ? new Date(user.createdAt.$date).toLocaleString() : "N/A",
-            updatedAt: user.updatedAt?.$date ? new Date(user.updatedAt.$date).toLocaleString() : "N/A",
+            createdAt: getFormattedDate(user.createdAt),
+            updatedAt: getFormattedDate(user.updatedAt),
             __v: user.__v,
         }));
 
@@ -97,6 +99,8 @@ const UserManagement = ({ theme }) => {
             },
         };
 
+
+
         const docDefinition = {
             content: [
                 { text: 'User Management Report', style: 'header' },
@@ -110,11 +114,25 @@ const UserManagement = ({ theme }) => {
                             ...data.map(user => [
                                 { text: user.username, noWrap: true },
                                 { text: user.email, noWrap: true },
-                                { text: user.profilePic || "N/A", link: user.profilePic, color: 'blue' },
+                                {
+                                    text: user.profilePic
+                                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${user.profilePic}`
+                                        : "N/A",
+                                    link: user.profilePic
+                                        ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${user.profilePic}`
+                                        : undefined,
+                                    color: user.profilePic ? 'blue' : 'black'
+                                },
                                 { text: user.role, alignment: 'center' },
                                 { text: user.status, alignment: 'center' },
-                                { text: user.createdAt?.$date ? new Date(user.createdAt.$date).toLocaleString() : "N/A", alignment: 'center' },
-                                { text: user.updatedAt?.$date ? new Date(user.updatedAt.$date).toLocaleString() : "N/A", alignment: 'center' },
+                                {
+                                    text: getFormattedDate(user.createdAt),
+                                    alignment: 'center'
+                                },
+                                {
+                                    text: getFormattedDate(user.updatedAt),
+                                    alignment: 'center'
+                                }
                             ]),
                         ],
                     },
@@ -138,24 +156,23 @@ const UserManagement = ({ theme }) => {
         pdfMake.createPdf(docDefinition).download('users_report.pdf');
     };
 
+    const getFormattedDate = (dateObj) => {
+        if (!dateObj) return "N/A";
+        // Check if dateObj is a string or an object
+        const dateString = typeof dateObj === 'string'
+            ? dateObj
+            : dateObj?.$date || dateObj;
 
-    // Fetch role data
-    useEffect(() => {
-        const fetchRoleData = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users/roles`);
-                const data = await res.json();
-                setRoleData(data);
-            } catch (error) {
-                console.error("Error fetching role data:", error);
-            }
-            finally {
-                setIsLoading(false);
-            }
-        };
-        fetchRoleData();
-    }, []);
+        try {
+            return new Date(dateString).toLocaleString();
+        } catch (e) {
+            console.error("Invalid date format:", dateObj);
+            return "Invalid Date";
+        }
+    };
+
+
+
 
     const handleOptionSelect = (option) => {
         setIsSelectedOption(false);
@@ -190,27 +207,34 @@ const UserManagement = ({ theme }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchAllData = async () => {
             setIsLoading(true);
-            setIsFetching(true); // Set fetching state
-            setHasLoaded(false); // Reset loaded state when fetching new data
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/admin/fetchRoleBasedUsers`, {
-                    params: { role: categoryFilter },
-                });
+            setIsFetching(true);
+            setHasLoaded(false);
 
-                setUsers(response.data);
+            try {
+                // Fetch both data in parallel
+                const [usersResponse, rolesResponse] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/admin/fetchRoleBasedUsers`, {
+                        params: { role: categoryFilter }
+                    }),
+                    fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/users/roles`).then(res => res.json())
+                ]);
+
+                setUsers(usersResponse.data);
+                setRoleData(rolesResponse);
+
             } catch (error) {
-                console.error("Error fetching users:", error);
+                console.error("Error fetching data:", error);
             } finally {
                 setIsLoading(false);
-                setHasLoaded(true); // Mark data as loaded
-                setIsFetching(false); // Mark fetching as complete
+                setIsFetching(false);
+                setHasLoaded(true);
             }
         };
 
-        fetchUsers();
-    }, [categoryFilter]);
+        fetchAllData();
+    }, [categoryFilter]); // Only categoryFilter as dependency since roles don't change
 
 
     const filteredUsers = React.useMemo(() => {
