@@ -36,7 +36,6 @@ const UserManagement = ({ theme }) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            password: user.password,
             profilePic: user.profilePic
                 ? `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${user.profilePic}`
                 : "N/A",
@@ -44,7 +43,6 @@ const UserManagement = ({ theme }) => {
             status: user.status,
             createdAt: getFormattedDate(user.createdAt),
             updatedAt: getFormattedDate(user.updatedAt),
-            __v: user.__v,
         }));
 
         // Create a new workbook and worksheet

@@ -25,8 +25,8 @@ const Hero = () => {
         },
         {
             image: image3,
-            heading: "Effortless Project Management and Tracking",
-            text: "Stay on top of your project with Collaborative Edge's tools. Collaborate with mentors, track progress, and ensure timely completion of your final year project.",
+            heading: "Effortless FYP Management and Collaboration",
+            text: "Stay on top of your project with Collaborative Edge's Web Portal. Collaborate with mentors, track progress, and ensure timely completion of your final year project.",
             buttonText: "Learn More",
             buttonLink: "/how-it-works",
         },

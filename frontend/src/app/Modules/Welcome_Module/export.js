@@ -7,6 +7,7 @@ import ProjectIdeasPage from "./pages/ProjectIdeasPage"
 import ContactUsPage from "./pages/ContactUsPage"
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage"
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage"
+import SuccessStoriesPage from "./pages/SuccessStoriesPage"
 
 export {
     Welcome_Module,
@@ -16,5 +17,6 @@ export {
     ProjectIdeasPage,
     ContactUsPage,
     PrivacyPolicyPage,
-    TermsAndConditionsPage
+    TermsAndConditionsPage,
+    SuccessStoriesPage
 }

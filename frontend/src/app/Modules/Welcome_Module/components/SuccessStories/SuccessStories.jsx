@@ -15,7 +15,7 @@ import image4 from "../../../../../assets/images/ten.webp";
 import image5 from "../../../../../assets/images/eleven.webp";
 import image6 from "../../../../../assets/images/twelve.webp";
 
-const HowItWorks = () => {
+const SuccessStories = () => {
     const fadeInUp = {
         hidden: { opacity: 0, y: 50 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -207,4 +207,4 @@ const HowItWorks = () => {
     );
 };
 
-export default HowItWorks;
+export default SuccessStories;

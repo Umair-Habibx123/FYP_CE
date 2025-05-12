@@ -13,6 +13,7 @@ import {
   AboutUsPage,
   HowItWorksPage,
   ProjectIdeasPage,
+  SuccessStoriesPage,
   ContactUsPage,
   PrivacyPolicyPage,
   TermsAndConditionsPage
@@ -128,6 +129,7 @@ function App() {
               <Route path="about-us" element={<AboutUsPage />} />
               <Route path="how-it-works" element={<HowItWorksPage />} />
               <Route path="project-ideas" element={<ProjectIdeasPage />} />
+              <Route path="success-stories" element={<SuccessStoriesPage />} />
               <Route path="contact-us" element={<ContactUsPage />} />
               <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="terms-and-conditions" element={<TermsAndConditionsPage />} />

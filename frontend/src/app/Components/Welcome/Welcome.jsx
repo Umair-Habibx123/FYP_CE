@@ -37,7 +37,7 @@ const Welcome = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-3xl md:text-4xl font-bold text-gray-800 text-center md:text-left leading-tight"
         >
-          Welcome to <span className="text-purple-600">Collaborative Edge</span> <br /> Project Management System
+          Welcome to <span className="text-purple-600">Collaborative Edge</span> <br /> FYP Collaboration System
         </motion.h1>
 
         <motion.p

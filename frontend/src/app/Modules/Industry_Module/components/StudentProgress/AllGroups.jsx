@@ -16,12 +16,16 @@ const AllGroups = () => {
     const navigate = useNavigate();
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState({
+        overall: "all",
+        industry: "all",
+        teacher: "all"
+    });
     const [universityFilter, setUniversityFilter] = useState("all");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [availableUniversities, setAvailableUniversities] = useState([]);
 
-    
+
     useEffect(() => {
         fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/fetchProjectDetailById/${projectId}`)
             .then((res) => res.json())
@@ -103,14 +107,22 @@ const AllGroups = () => {
                 student.username.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
-        const matchesStatus = statusFilter === "all" ||
-            (statusFilter === "completed" && selection.isCompleted) ||
-            (statusFilter === "pending" && !selection.isCompleted);
+        const matchesOverallStatus = statusFilter.overall === "all" ||
+            (statusFilter.overall === "completed" && selection.status.isCompleted) ||
+            (statusFilter.overall === "pending" && !selection.status.isCompleted);
+
+        const matchesIndustryStatus = statusFilter.industry === "all" ||
+            (statusFilter.industry === "completed" && selection.status.IndustryCompleted) ||
+            (statusFilter.industry === "pending" && !selection.status.IndustryCompleted);
+
+        const matchesTeacherStatus = statusFilter.teacher === "all" ||
+            (statusFilter.teacher === "completed" && selection.status.TeacherCompleted) ||
+            (statusFilter.teacher === "pending" && !selection.status.TeacherCompleted);
 
         const matchesUniversity = universityFilter === "all" ||
             selection.university === universityFilter;
 
-        return matchesSearch && matchesStatus && matchesUniversity;
+        return matchesSearch && matchesOverallStatus && matchesIndustryStatus && matchesTeacherStatus && matchesUniversity;
     }) || [];
 
     if (isLoading || !projectData) {
@@ -233,93 +245,124 @@ const AllGroups = () => {
                 </div>
 
                 {/* Search and Filter Section */}
+
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
-                    <div className={`relative flex-1 ${theme === "dark" ? "bg-gray-800/50" : "bg-white"} rounded-lg shadow`}>
+                    {/* Search Input - Full width on mobile, flex-1 on desktop */}
+                    <div className={`relative w-full md:flex-1 ${theme === "dark" ? "bg-gray-800/50" : "bg-white"} rounded-lg shadow transition-all`}>
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className={`w-5 h-5 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`} />
                         </div>
                         <input
                             type="text"
                             placeholder="Search groups or students..."
-                            className={`w-full pl-10 pr-4 py-3 rounded-lg ${theme === "dark" ? "bg-gray-800/50 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50" : "bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50"} border-none focus:outline-none`}
+                            className={`w-full pl-10 pr-4 py-3 rounded-lg ${theme === "dark" ? "bg-gray-800/50 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50" : "bg-white text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50"} border-none focus:outline-none transition-all`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
+                    {/* Filter Button and Dropdown */}
                     <div className="relative">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`flex items-center gap-2 w-full md:w-48 px-4 py-3 rounded-lg ${theme === "dark" ? "bg-gray-800/50 hover:bg-gray-800" : "bg-white hover:bg-gray-50"} shadow transition-all`}
+                            className={`flex items-center justify-center md:justify-between gap-2 w-full md:w-48 px-4 py-3 rounded-lg ${theme === "dark" ? "bg-gray-800/50 hover:bg-gray-800" : "bg-white hover:bg-gray-50"} shadow transition-all`}
                         >
-                            <Filter className="w-5 h-5" />
-                            <span className="font-medium">Filter</span>
+                            <div className="flex items-center gap-2">
+                                <Filter className="w-5 h-5" />
+                                <span className="font-medium">Filter</span>
+                            </div>
                             {isFilterOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                         </button>
 
+                        {/* Dropdown - Full width on mobile, fixed width on desktop */}
                         {isFilterOpen && (
-                            <div className={`absolute right-0 mt-2 w-full md:w-64 rounded-lg shadow-lg z-10 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
-                                <div className="p-2">
-                                    <h4 className={`px-3 py-2 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Status</h4>
-                                    <label className={`block px-3 py-2 rounded-md text-sm font-medium ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
-                                        <input
-                                            type="radio"
-                                            className="mr-2"
-                                            name="statusFilter"
-                                            value="all"
-                                            checked={statusFilter === "all"}
-                                            onChange={() => setStatusFilter("all")}
-                                        />
-                                        All Status
-                                    </label>
-                                    <label className={`block px-3 py-2 rounded-md text-sm font-medium ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
-                                        <input
-                                            type="radio"
-                                            className="mr-2"
-                                            name="statusFilter"
-                                            value="completed"
-                                            checked={statusFilter === "completed"}
-                                            onChange={() => setStatusFilter("completed")}
-                                        />
-                                        Completed
-                                    </label>
-                                    <label className={`block px-3 py-2 rounded-md text-sm font-medium ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
-                                        <input
-                                            type="radio"
-                                            className="mr-2"
-                                            name="statusFilter"
-                                            value="pending"
-                                            checked={statusFilter === "pending"}
-                                            onChange={() => setStatusFilter("pending")}
-                                        />
-                                        Pending
-                                    </label>
+                            <div className={`absolute md:right-0 mt-2 w-full md:w-80 rounded-lg shadow-lg z-10 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
+                                <div className="p-2 max-h-[70vh] overflow-y-auto">
+                                    {/* Filter sections with grid layout */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        {/* Overall Status */}
+                                        <div className="space-y-1">
+                                            <h4 className={`px-3 py-1 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Overall</h4>
+                                            {["all", "completed", "pending"].map((status) => (
+                                                <label key={status} className={`flex items-center px-3 py-1.5 rounded-md text-sm ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
+                                                    <input
+                                                        type="radio"
+                                                        className="mr-2"
+                                                        name="overallStatus"
+                                                        value={status}
+                                                        checked={statusFilter.overall === status}
+                                                        onChange={() => setStatusFilter({ ...statusFilter, overall: status })}
+                                                    />
+                                                    {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </label>
+                                            ))}
+                                        </div>
 
-                                    <h4 className={`px-3 py-2 mt-2 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>University</h4>
-                                    <label className={`block px-3 py-2 rounded-md text-sm font-medium ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
-                                        <input
-                                            type="radio"
-                                            className="mr-2"
-                                            name="universityFilter"
-                                            value="all"
-                                            checked={universityFilter === "all"}
-                                            onChange={() => setUniversityFilter("all")}
-                                        />
-                                        All Universities
-                                    </label>
-                                    {availableUniversities.map((uni) => (
-                                        <label key={uni} className={`block px-3 py-2 rounded-md text-sm font-medium ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
-                                            <input
-                                                type="radio"
-                                                className="mr-2"
-                                                name="universityFilter"
-                                                value={uni}
-                                                checked={universityFilter === uni}
-                                                onChange={() => setUniversityFilter(uni)}
-                                            />
-                                            {uni}
-                                        </label>
-                                    ))}
+                                        {/* Industry Status */}
+                                        <div className="space-y-1">
+                                            <h4 className={`px-3 py-1 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Industry</h4>
+                                            {["all", "completed", "pending"].map((status) => (
+                                                <label key={status} className={`flex items-center px-3 py-1.5 rounded-md text-sm ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
+                                                    <input
+                                                        type="radio"
+                                                        className="mr-2"
+                                                        name="industryStatus"
+                                                        value={status}
+                                                        checked={statusFilter.industry === status}
+                                                        onChange={() => setStatusFilter({ ...statusFilter, industry: status })}
+                                                    />
+                                                    {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {/* Teacher Status */}
+                                        <div className="space-y-1">
+                                            <h4 className={`px-3 py-1 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Teacher</h4>
+                                            {["all", "completed", "pending"].map((status) => (
+                                                <label key={status} className={`flex items-center px-3 py-1.5 rounded-md text-sm ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
+                                                    <input
+                                                        type="radio"
+                                                        className="mr-2"
+                                                        name="teacherStatus"
+                                                        value={status}
+                                                        checked={statusFilter.teacher === status}
+                                                        onChange={() => setStatusFilter({ ...statusFilter, teacher: status })}
+                                                    />
+                                                    {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {/* University - Full width */}
+                                        <div className="md:col-span-2 space-y-1">
+                                            <h4 className={`px-3 py-1 text-sm font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>University</h4>
+                                            <label className={`flex items-center px-3 py-1.5 rounded-md text-sm ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
+                                                <input
+                                                    type="radio"
+                                                    className="mr-2"
+                                                    name="universityFilter"
+                                                    value="all"
+                                                    checked={universityFilter === "all"}
+                                                    onChange={() => setUniversityFilter("all")}
+                                                />
+                                                All Universities
+                                            </label>
+                                            {availableUniversities.map((uni) => (
+                                                <label key={uni} className={`flex items-center px-3 py-1.5 rounded-md text-sm ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} cursor-pointer`}>
+                                                    <input
+                                                        type="radio"
+                                                        className="mr-2"
+                                                        name="universityFilter"
+                                                        value={uni}
+                                                        checked={universityFilter === uni}
+                                                        onChange={() => setUniversityFilter(uni)}
+                                                    />
+                                                    {uni}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -327,12 +370,32 @@ const AllGroups = () => {
                 </div>
 
                 {/* Active Filters Display */}
-                {(statusFilter !== "all" || universityFilter !== "all") && (
+                {(statusFilter.overall !== "all" || statusFilter.industry !== "all" || statusFilter.teacher !== "all" || universityFilter !== "all") && (
                     <div className="flex flex-wrap gap-2 mb-6">
-                        {statusFilter !== "all" && (
+                        {statusFilter.overall !== "all" && (
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-600"}`}>
+                                <span>Overall: {statusFilter.overall}</span>
+                                <button onClick={() => setStatusFilter({ ...statusFilter, overall: "all" })} className="focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                        {statusFilter.industry !== "all" && (
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-blue-900/30 text-blue-300" : "bg-blue-100 text-blue-600"}`}>
-                                <span>Status: {statusFilter}</span>
-                                <button onClick={() => setStatusFilter("all")} className="focus:outline-none">
+                                <span>Industry: {statusFilter.industry}</span>
+                                <button onClick={() => setStatusFilter({ ...statusFilter, industry: "all" })} className="focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                        {statusFilter.teacher !== "all" && (
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-600"}`}>
+                                <span>Teacher: {statusFilter.teacher}</span>
+                                <button onClick={() => setStatusFilter({ ...statusFilter, teacher: "all" })} className="focus:outline-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -340,7 +403,7 @@ const AllGroups = () => {
                             </div>
                         )}
                         {universityFilter !== "all" && (
-                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-600"}`}>
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"}`}>
                                 <School className="w-4 h-4" />
                                 <span>{universityFilter}</span>
                                 <button onClick={() => setUniversityFilter("all")} className="focus:outline-none">
@@ -452,20 +515,48 @@ const AllGroups = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${selection.isCompleted ?
-                                                            (theme === "dark" ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700") :
-                                                            (theme === "dark" ? "bg-yellow-900/30 text-yellow-400" : "bg-yellow-100 text-yellow-700")}`}>
-                                                            {selection.isCompleted ? (
-                                                                <>
-                                                                    <CheckCircle className="w-4 h-4" />
-                                                                    <span>Completed</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <AlertCircle className="w-4 h-4" />
-                                                                    <span>Pending</span>
-                                                                </>
-                                                            )}
+                                                        <div className="flex flex-col gap-2">
+                                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${selection.status.isCompleted ?
+                                                                (theme === "dark" ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700") :
+                                                                (theme === "dark" ? "bg-yellow-900/30 text-yellow-400" : "bg-yellow-100 text-yellow-700")}`}>
+                                                                {selection.status.isCompleted ? (
+                                                                    <>
+                                                                        <CheckCircle className="w-4 h-4" />
+                                                                        <span>Overall Completed</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <AlertCircle className="w-4 h-4" />
+                                                                        <span>Overall Pending</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span
+                                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                                        ? selection.status.IndustryCompleted
+                                                                            ? 'bg-blue-800 text-blue-200'
+                                                                            : 'bg-gray-700 text-gray-300'
+                                                                        : selection.status.IndustryCompleted
+                                                                            ? 'bg-blue-100 text-blue-800'
+                                                                            : 'bg-gray-100 text-gray-600'
+                                                                        }`}
+                                                                >
+                                                                    {selection.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
+                                                                </span>
+                                                                <span
+                                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                                        ? selection.status.TeacherCompleted
+                                                                            ? 'bg-purple-800 text-purple-200'
+                                                                            : 'bg-gray-700 text-gray-300'
+                                                                        : selection.status.TeacherCompleted
+                                                                            ? 'bg-purple-100 text-purple-800'
+                                                                            : 'bg-gray-100 text-gray-600'
+                                                                        }`}
+                                                                >
+                                                                    {selection.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
@@ -475,7 +566,7 @@ const AllGroups = () => {
                                                                 "bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 hover:text-white" :
                                                                 "bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700"} shadow-sm`}
                                                         >
-                                                            {selection.isCompleted ? "View Results" : "Evaluate"}
+                                                            {selection.status.isCompleted ? "View Results" : "Evaluate"}
                                                             <ArrowRight className="w-4 h-4" />
                                                         </button>
                                                     </td>

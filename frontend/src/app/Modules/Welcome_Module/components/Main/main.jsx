@@ -37,7 +37,8 @@ const Main = () => {
     const cards = [
         {
             image: image1,
-            title: "Industry-Sponsored FYPs",
+            title: "Industry-Collaborated FYPs",
+            //  or -> "Industry-Proposed FYPs" , "Industry-Linked FYPs", "Industry-Partnered FYPs" , "Industry-Suggested FYPs", "Real-World FYPs (Powered by Industry)"
             description: "Industry representatives upload Final Year Project (FYP) ideas to the portal, providing students with real-world challenges while bridging the gap between academia and industry.",
             icon: <Handshake size={24} className="text-blue-600" />
         },

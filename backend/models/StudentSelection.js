@@ -10,7 +10,11 @@ const StudentSelectionSchema = new Schema(
         groupLeader: { type: String, required: true },
         groupMembers: { type: [String], default: [] },
         joinedAt: { type: Date, default: null },
-        isCompleted: { type: Boolean, default: false },
+        status: {
+          IndustryCompleted: { type: Boolean, default: false },
+          TeacherCompleted: { type: Boolean, default: false },
+          isCompleted: { type: Boolean, default: false } 
+        },
         completedAt: { type: Date, default: null },
       },
     ],
@@ -20,20 +24,58 @@ const StudentSelectionSchema = new Schema(
 
 StudentSelectionSchema.pre("save", function (next) {
   this.studentSelection.forEach((selection) => {
+    // Set joinedAt if not set
     if (!selection.joinedAt) {
       selection.joinedAt = new Date();
     }
 
-    if (selection.isCompleted && !selection.completedAt) {
-      selection.completedAt = new Date();
-    }
+    // Calculate overall completion status
+    selection.status.isCompleted = 
+      selection.status.IndustryCompleted && selection.status.TeacherCompleted;
 
-    if (!selection.isCompleted && selection.completedAt) {
+    // Handle completedAt timestamp
+    if (selection.status.isCompleted && !selection.completedAt) {
+      selection.completedAt = new Date();
+    } else if (!selection.status.isCompleted && selection.completedAt) {
       selection.completedAt = null;
     }
   });
   next();
 });
+
+// Add instance method to update role status
+StudentSelectionSchema.methods.updateRoleStatus = async function(
+  selectionId, 
+  role, 
+  isCompleted
+) {
+  const selection = this.studentSelection.find(s => s.selectionId === selectionId);
+  
+  if (!selection) {
+    throw new Error('Selection not found');
+  }
+
+  if (role === 'industry') {
+    selection.status.IndustryCompleted = isCompleted;
+  } else if (role === 'teacher') {
+    selection.status.TeacherCompleted = isCompleted;
+  } else {
+    throw new Error('Invalid role specified');
+  }
+
+  // Recalculate overall status
+  selection.status.isCompleted = 
+    selection.status.IndustryCompleted && selection.status.TeacherCompleted;
+
+  // Update completedAt if needed
+  if (selection.status.isCompleted && !selection.completedAt) {
+    selection.completedAt = new Date();
+  } else if (!selection.status.isCompleted && selection.completedAt) {
+    selection.completedAt = null;
+  }
+
+  return this.save();
+};
 
 const StudentSelection = model("StudentSelection", StudentSelectionSchema);
 

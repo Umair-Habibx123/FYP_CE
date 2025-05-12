@@ -30,6 +30,7 @@ router.post("/AddProject", express.json(), async (req, res) => {
             requiredSkills,
             additionalInfo,
             duration,
+            maxStudentsPerGroup,
             maxGroups,
             attachments
         } = req.body;
@@ -75,7 +76,7 @@ router.post("/AddProject", express.json(), async (req, res) => {
             representativeId,
             industryName,
             attachments: parsedAttachments,
-            ...(selection === "Group" && { maxGroups }),
+            ...(selection === "Group" && { maxStudentsPerGroup, maxGroups }),
         });
 
         const savedProject = await newProject.save();

@@ -24,8 +24,8 @@ const ProjectForm = ({ theme }) => {
     const [requiredSkills, setRequiredSkills] = useState([]);
     const [skillInput, setSkillInput] = useState('');
     const [selection, setSelection] = useState("");
-    const [maxStudent, setMaxStudent] = useState(200);
-    const [maxGroups, setMaxGroups] = useState(10);
+    const [maxStudentsPerGroup, setMaxStudentsPerGroup] = useState(3);
+    const [maxGroups, setMaxGroups] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [attachments, setAttachments] = useState([]);
     const fileInputRef = useRef(null);
@@ -143,8 +143,15 @@ const ProjectForm = ({ theme }) => {
             return;
         }
 
+        if (selection === "Group" && (!maxStudentsPerGroup || maxStudentsPerGroup < 1)) {
+            toast.warning("Please specify the number of students per group.");
+            setIsModalOpen(false);
+            setFormSubmitLoading(false);
+            return;
+        }
+
         if (selection === "Group" && (!maxGroups || maxGroups < 1)) {
-            toast.warning("Please specify the number of groups.");
+            toast.warning("Please specify the number of groups university can have.");
             setIsModalOpen(false);
             setFormSubmitLoading(false);
             return;
@@ -218,6 +225,7 @@ const ProjectForm = ({ theme }) => {
         formData.append("requiredSkills", JSON.stringify(requiredSkills));
 
         if (selection === "Group") {
+            formData.append("maxStudentsPerGroup", maxStudentsPerGroup);
             formData.append("maxGroups", maxGroups);
         } else if (selection === "Individual") {
             formData.append("maxStudent", maxStudent);
@@ -316,8 +324,8 @@ const ProjectForm = ({ theme }) => {
         });
         setAttachments([]);
         setSkills([]);
-        setMaxStudent(3);
-        setMaxGroups(10);
+        setMaxStudentsPerGroup(3);
+        setMaxGroups(1);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -558,7 +566,7 @@ const ProjectForm = ({ theme }) => {
 
                     {selection === "Group" && (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
+                            {/* Max Groups Input */}
                             <div>
                                 <label className={`block text-sm font-semibold mb-2 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
                                     Max Groups <span className="text-red-500">*</span>
@@ -569,18 +577,38 @@ const ProjectForm = ({ theme }) => {
                                     value={maxGroups}
                                     onChange={(e) => setMaxGroups(Number(e.target.value))}
                                     required
+                                    disabled
                                     className={`border-2 w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-base px-4 py-3 ${theme === "dark" ? "bg-gray-700 text-white" : "bg-white"}`}
                                     placeholder="Enter max groups"
                                 />
                             </div>
+
+                            {/* Max Students Per Group Input */}
+                            <div>
+                                <label className={`block text-sm font-semibold mb-2 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                                    Max Students Per Group <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={maxStudentsPerGroup}
+                                    onChange={(e) => setMaxStudentsPerGroup(Number(e.target.value))}
+                                    required
+                                    className={`border-2 w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-base px-4 py-3 ${theme === "dark" ? "bg-gray-700 text-white" : "bg-white"}`}
+                                    placeholder="Enter max students per group"
+                                >
+                                    <option value="" disabled>Select max students per group</option>
+                                    <option value={2}>2</option>
+                                    <option value={3}>3</option>
+                                    <option value={4}>4</option>
+                                    <option value={5}>5</option>
+                                </select>
+                            </div>
+                            <p className="mt-1 text-xs sm:text-sm font-medium text-red-600">
+                                Note regarding &quot;Max Groups&quot;: This specifies the maximum number of groups that can be selected
+                                per university where the project will be approved.
+                            </p>
                         </div>
                     )}
                 </div>
-
-                <p className="mt-1 text-xs sm:text-sm font-medium text-red-600">
-                    Note regarding &quot;Max Groups&quot;: This specifies the maximum number of groups that can be selected
-                    per university where the project will be approved.
-                </p>
 
                 {/* Project Duration */}
                 <div>
@@ -912,8 +940,8 @@ const ProjectForm = ({ theme }) => {
                                         setSkills([...skills, suggestion]);
                                     }}
                                     className={`block w-full text-left px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out ${theme === "dark"
-                                            ? `text-white hover:bg-gray-600 ${highlightedIndex === index ? "bg-gray-600" : ""}`
-                                            : `text-gray-700 hover:bg-blue-100 hover:text-blue-600 ${highlightedIndex === index ? "bg-blue-100 text-blue-600" : ""}`
+                                        ? `text-white hover:bg-gray-600 ${highlightedIndex === index ? "bg-gray-600" : ""}`
+                                        : `text-gray-700 hover:bg-blue-100 hover:text-blue-600 ${highlightedIndex === index ? "bg-blue-100 text-blue-600" : ""}`
                                         }`}
                                     onMouseEnter={() => setHighlightedIndex(index)}
                                 >

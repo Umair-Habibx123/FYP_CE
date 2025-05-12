@@ -50,7 +50,11 @@ const Evaluation = () => {
     const [reviews, setReviews] = useState([]);
     const [isMarkingComplete, setIsMarkingComplete] = useState(false);
     const [completionStatus, setCompletionStatus] = useState({
-        isCompleted: false,
+        status: {
+            IndustryCompleted: false,
+            TeacherCompleted: false,
+            isCompleted: false
+        },
         completedAt: null
     });
     const [noSubmissionsFound, setNoSubmissionsFound] = useState(false);
@@ -119,16 +123,24 @@ const Evaluation = () => {
                 // 3. Fetch submission-related data (only if project exists and user has access)
                 if (projectData && (!user || canAccess)) {
                     try {
-                        // Fetch all submission-related data in parallel
-                        const [submissionsResponse, completionResponse, reviewResponse] = await Promise.all([
-                            axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getSubmissions`, {
-                                params: { projectId, selectionId }
-                            }),
-                            axios.get(
-                                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getCompletionStatus/${projectId}/${selectionId}`
-                            ),
-                            axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getReviewForSelection/${projectId}/${selectionId}`)
-                        ]);
+
+                        // Fetch submissions
+                        const submissionsResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getSubmissions`, {
+                            params: { projectId, selectionId }
+                        });
+
+                        if (submissionsResponse.data.message === "No submissions found") {
+                            setNoSubmissionsFound(true);
+                            setSubmissions({ submissions: [] });
+                        } else {
+                            setSubmissions(submissionsResponse.data || { submissions: [] });
+                        }
+
+                        const completionResponse = await axios.get(
+                            `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getCompletionStatus/${projectId}/${selectionId}`
+                        );
+
+                        const reviewResponse = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getReviewForSelection/${projectId}/${selectionId}`);
 
                         // Process submissions
                         if (submissionsResponse.data.message === "No submissions found") {
@@ -142,7 +154,7 @@ const Evaluation = () => {
                         setCompletionStatus(completionResponse.data);
 
                         // Process reviews
-                        if (reviewResponse.data?.reviews?.length > 0) {
+                        if (reviewResponse.data && reviewResponse.data.reviews && reviewResponse.data.reviews.length > 0) {
                             setReviews(reviewResponse.data.reviews);
                         } else {
                             setReviews([]);
@@ -206,14 +218,20 @@ const Evaluation = () => {
             setIsMarkingComplete(true);
             const value = markAsComplete;
             await axios.put(
-                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/MarkAsCompleted/${projectId}/complete/${selectionId}/${value}`
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/MarkAsCompleted/${projectId}/${selectionId}/${user.role}/${value}`
             );
             toast.success(`Project marked as ${markAsComplete ? 'completed' : 'incomplete'} successfully!`);
 
             setCompletionStatus(prev => ({
-                isCompleted: markAsComplete,
+                ...prev,
+                status: {
+                    ...prev.status,
+                    [user.role === "teacher" ? "TeacherCompleted" : "IndustryCompleted"]: markAsComplete,
+                    isCompleted: markAsComplete
+                },
                 completedAt: markAsComplete ? new Date().toISOString() : null
             }));
+
         } catch (err) {
             toast.error(err.response?.data?.message || `Failed to mark project as ${markAsComplete ? 'completed' : 'incomplete'}`);
         } finally {
@@ -263,9 +281,11 @@ const Evaluation = () => {
             </div>
         );
     }
-
-
-    if (noSubmissionsFound || !submissions?.submissions || submissions.submissions.length === 0) {
+    if (
+        noSubmissionsFound ||
+        !Array.isArray(submissions?.submissions) ||
+        submissions.submissions.length === 0
+    ) {
         return (
             <div className={`-mt-[70px] md:-mt-[90px] min-h-screen p-4 md:p-8 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
                 <ToastContainer />
@@ -344,109 +364,145 @@ const Evaluation = () => {
 
                 {/* Header Section */}
                 <div className="mb-8">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
-                        <div className="space-y-3">
-                            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                                Project Submissions
-                            </h1>
-                            <div className="flex flex-wrap gap-2">
-                                <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <FolderGit className="h-4 w-4 mr-2 text-blue-500" />
-                                    Project: <span className="ml-1 font-mono">{projectId}</span>
+                    <div className="flex flex-col gap-6 mb-8">
+                        {/* Header section */}
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="space-y-2">
+                                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                                    Project Submissions
+                                </h1>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <FolderGit className="h-4 w-4 mr-2 text-blue-500" />
+                                        Project: <span className="ml-1 font-mono">{projectId}</span>
+                                    </span>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <Users2 className="h-4 w-4 mr-2 text-purple-500" />
+                                        Group: <span className="ml-1 font-mono">{selectionId}</span>
+                                    </span>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                                        Last: <span className="ml-1">{new Date(submissions.lastSubmittedAt).toLocaleDateString()}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Status indicators - moved to right side */}
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                        ? completionStatus.status.IndustryCompleted
+                                            ? 'bg-blue-800 text-blue-200'
+                                            : 'bg-gray-700 text-gray-300'
+                                        : completionStatus.status.IndustryCompleted
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : 'bg-gray-100 text-gray-600'
+                                        }`}
+                                >
+                                    {completionStatus.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
                                 </span>
-                                <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <Users2 className="h-4 w-4 mr-2 text-purple-500" />
-                                    Group: <span className="ml-1 font-mono">{selectionId}</span>
-                                </span>
-                                <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <Clock className="h-4 w-4 mr-2 text-amber-500" />
-                                    Last: <span className="ml-1">{new Date(submissions.lastSubmittedAt).toLocaleDateString()}</span>
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                        ? completionStatus.status.TeacherCompleted
+                                            ? 'bg-purple-800 text-purple-200'
+                                            : 'bg-gray-700 text-gray-300'
+                                        : completionStatus.status.TeacherCompleted
+                                            ? 'bg-purple-100 text-purple-800'
+                                            : 'bg-gray-100 text-gray-600'
+                                        }`}
+                                >
+                                    {completionStatus.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            {user.role === "teacher" && (
-                                <button
-                                    onClick={handleEvaluateAll}
-                                    className={`flex-shrink-0 flex items-center justify-center px-6 py-3.5 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                                            ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {userTeacherReview ? (
-                                        <>
-                                            <PenSquare className="h-5 w-5" />
-                                            Edit Teacher Review
-                                        </>
-                                    ) : (
-                                        <>
-                                            <GraduationCap className="h-5 w-5" />
-                                            Add Teacher Review
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                        {/* Action buttons - now in a single row with consistent spacing */}
+                        <div className="flex flex-col sm:flex-row gap-3 w-full">
+                            <div className="flex flex-1 gap-3">
+                                {user.role === "teacher" && (
+                                    <button
+                                        onClick={handleEvaluateAll}
+                                        className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {userTeacherReview ? (
+                                            <>
+                                                <PenSquare className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Edit Teacher Review</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <GraduationCap className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Add Teacher Review</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
 
-                            {user.role === "industry" && (
-                                <button
-                                    onClick={handleEvaluateAll}
-                                    className={`flex-shrink-0 flex items-center justify-center px-6 py-3.5 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                                            ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {userIndustryReview ? (
-                                        <>
-                                            <PenSquare className="h-5 w-5" />
-                                            Edit Industry Review
-                                        </>
-                                    ) : (
-                                        <>
-                                            <HardHat className="h-5 w-5" />
-                                            Add Industry Review
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                                {user.role === "industry" && (
+                                    <button
+                                        onClick={handleEvaluateAll}
+                                        className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {userIndustryReview ? (
+                                            <>
+                                                <PenSquare className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Edit Industry Review</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <HardHat className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Add Industry Review</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
 
-                            {completionStatus.isCompleted ? (
-                                <button
-                                    onClick={() => handleMarkAsCompleted(false)}
-                                    disabled={isMarkingComplete}
-                                    className={`flex-shrink-0 flex items-center justify-center px-6 py-3.5 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                                            ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {isMarkingComplete ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <XCircle className="h-5 w-5" />
-                                    )}
-                                    Mark as Incomplete
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleMarkAsCompleted(true)}
-                                    disabled={isMarkingComplete}
-                                    className={`flex-shrink-0 flex items-center justify-center px-6 py-3.5 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                                            ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {isMarkingComplete ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <CheckCircle2 className="h-5 w-5" />
-                                    )}
-                                    Mark as Complete
-                                </button>
-                            )}
+                            <div className="flex-1">
+                                {completionStatus.status.TeacherCompleted ? (
+                                    <button
+                                        onClick={() => handleMarkAsCompleted(false)}
+                                        disabled={isMarkingComplete}
+                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {isMarkingComplete ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <XCircle className="h-5 w-5" />
+                                        )}
+                                        <span className="whitespace-nowrap">Mark as Incomplete</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleMarkAsCompleted(true)}
+                                        disabled={isMarkingComplete}
+                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {isMarkingComplete ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 className="h-5 w-5" />
+                                        )}
+                                        <span className="whitespace-nowrap">Mark as Complete</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 

@@ -8,7 +8,8 @@ const projectSchema = new Schema(
         difficultyLevel: { type: String, required: true },
         industryName: { type: String, required: true },
         type: { type: String, enum: ["Individual", "Group"], required: true },
-        maxGroups: { type: Number }, 
+        maxStudentsPerGroup: { type: Number },
+        maxGroups: { type: Number },
         duration: {
             startDate: { type: Date, required: true },
             endDate: { type: Date, required: true },

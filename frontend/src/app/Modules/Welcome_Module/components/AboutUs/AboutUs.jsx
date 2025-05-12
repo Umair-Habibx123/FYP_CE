@@ -100,7 +100,7 @@ const AboutUs = () => {
                         </p>
                     </motion.div>
 
-                    {/* Feature 5: Seamless Project Management */}
+                    {/* Feature 5: Seamless FYP Project Process */}
                     <motion.div
                         className="bg-white rounded-xl shadow-lg border-2 border-gray-300 cursor-pointer hover:shadow-2xl  transition-shadow p-8 flex flex-col items-center text-center"
                         initial={{ opacity: 0, y: 50 }}
@@ -111,9 +111,9 @@ const AboutUs = () => {
                         <div className="bg-gray-100 p-4 rounded-full mb-6">
                             <ListChecks className="w-8 h-8 text-gray-600" strokeWidth={1.5} />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3">Seamless Project Management</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-3">Seamless FYP Project Process</h3>
                         <p className="text-gray-600">
-                            Tools for tracking progress, facilitating communication, and ensuring timely completion for all stakeholders.
+                            A Web Portal for FYP Collaboration, facilitating communication, and ensuring timely completion for all stakeholders.
                         </p>
                     </motion.div>
 

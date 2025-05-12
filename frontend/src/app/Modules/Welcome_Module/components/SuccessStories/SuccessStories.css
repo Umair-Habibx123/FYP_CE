@@ -1,0 +1,5 @@
+
+.wrapper:hover> :not(:hover) {
+    filter: blur(5px);
+    opacity: .5;
+}

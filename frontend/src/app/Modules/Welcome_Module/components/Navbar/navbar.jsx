@@ -114,16 +114,16 @@ const Navbar = () => {
                 </motion.div>
 
                 <motion.ul className="hidden lg:flex col-span-6 justify-center space-x-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-                    {["About Us", "How It Works", "Project Ideas", "Contact Us"].map((item, index) => {
+                    {["About Us", "How It Works", "Project Ideas", "Success Stories", "Contact Us"].map((item, index) => {
                         const path = `/${item.toLowerCase().replace(/ /g, "-")}`;
                         const isActive = location.pathname === path;
 
                         return (
                             <motion.li
                                 key={index}
-                                className={ `hover:text-blue-500 font-bold text-[16px] cursor-pointer transition px-2 relative ${isActive
-                                        ? "text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-lg"
-                                        : "text-white"
+                                className={`hover:text-blue-500 font-bold text-[16px] cursor-pointer transition px-2 relative ${isActive
+                                    ? "text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-lg"
+                                    : "text-white"
                                     }`}
                                 whileHover={{ scale: 1.1 }}
                             >

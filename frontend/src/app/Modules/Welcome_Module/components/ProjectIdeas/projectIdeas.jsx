@@ -7,7 +7,8 @@ import {
     Briefcase,
     Puzzle,
     Users,
-    BookOpenCheck
+    BookOpenCheck,
+    Brain
 } from 'lucide-react';
 import { Link } from "react-router-dom";
 import image1 from "../../../../../assets/images/fourteen.webp";
@@ -42,11 +43,11 @@ const ProjectIdeas = () => {
         },
         {
             title: "Skill Enhancement and Personal Growth",
-            description: "Develop critical technical and soft skills through projects that foster creativity, critical thinking, and innovation. Gain expertise in cutting-edge technologies while improving teamwork and project management abilities.",
+            description: "Develop critical technical and soft skills through projects that foster creativity, critical thinking, and innovation. Gain expertise in cutting-edge technologies while improving teamwork and real-world problem-solving abilities.",
             tags: [
                 { name: "Technical Skills", icon: <Code2 className="w-4 h-4" /> },
                 { name: "Teamwork", icon: <Users className="w-4 h-4" /> },
-                { name: "Project Management", icon: <BookOpenCheck className="w-4 h-4" /> },
+                { name: "Critical Thinking", icon: <Brain className="w-4 h-4" /> },
                 { name: "Innovation", icon: <Cpu className="w-4 h-4" /> }
             ],
             linkText: "Enhance Your Skills",

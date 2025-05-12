@@ -132,46 +132,64 @@ router.get("/CheckUserInProject", async (req, res) => {
     }
 });
 
-
 router.post("/JoinExistingGroupforProject", async (req, res) => {
     const { projectId, selectionId, userEmail } = req.body;
 
     try {
-
-        const project = await StudentSelection.findById(projectId);
-
-        if (!project) {
-            return res.status(404).json({ message: "There Is No Existing Groups Avaiable. Try \"SELECT PROJECT AS NEW GROUP\"" });
+        // 1. Find the project in StudentSelection collection
+        const studentSelection = await StudentSelection.findById(projectId);
+        if (!studentSelection) {
+            return res.status(404).json({ 
+                message: "There Is No Existing Groups Available. Try \"SELECT PROJECT AS NEW GROUP\"" 
+            });
         }
 
-        const selection = project.studentSelection.find(
+        // 2. Find the specific selection/group
+        const selection = studentSelection.studentSelection.find(
             (sel) => sel.selectionId === selectionId
         );
-
         if (!selection) {
             return res.status(404).json({ message: "Invalid Selection Id" });
         }
 
-        if (selection.groupMembers.length >= 3) {
-            return res.status(400).json({ message: "Group is full" });
+        // 3. Find the corresponding project to get maxStudentsPerGroup
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
         }
 
+        // 4. Check if user is already in the group
         if (selection.groupMembers.includes(userEmail)) {
             return res.status(400).json({ message: "User is already in the group" });
         }
 
+        // 5. Check group size limit against project's maxStudentsPerGroup
+        if (selection.groupMembers.length >= project.maxStudentsPerGroup) {
+            return res.status(400).json({ 
+                message: `Group is full (maximum ${project.maxStudentsPerGroup} students allowed)` 
+            });
+        }
+
+        // 6. Add user to group
         selection.groupMembers.push(userEmail);
+        selection.groupMembers = [...new Set(selection.groupMembers)]; // Ensure uniqueness
 
-        selection.groupMembers = [...new Set(selection.groupMembers)];
+        await studentSelection.save();
 
-
-        await project.save();
-
-        res.status(200).json({ message: "Successfully joined the group", project });
+        res.status(200).json({ 
+            message: "Successfully joined the group", 
+            project: studentSelection,
+            maxStudentsPerGroup: project.maxStudentsPerGroup
+        });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error joining group:", error);
+        res.status(500).json({ 
+            message: "Internal server error", 
+            error: error.message 
+        });
     }
 });
+
 
 
 // api allowed only total all selection from all university must be equal to fixed project max groups
@@ -518,8 +536,6 @@ router.get("/getAllSelectionGroups", async (req, res) => {
 
 
 
-
-
 router.get("/fetchProjectsWithGroupMembersAndSelectionDetails", async (req, res) => {
     try {
         const { userEmail } = req.query;
@@ -837,38 +853,43 @@ const fetchStudentDetails = async (email) => {
 };
 
 
-router.put("/MarkAsCompleted/:Id/complete/:selectionId/:value", async (req, res) => {
-    const { Id, selectionId, value } = req.params;
+router.put("/MarkAsCompleted/:Id/:selectionId/:role/:value", async (req, res) => {
+    const { Id, selectionId, role, value } = req.params;
+    const isCompleted = value === 'true';
 
     try {
         const studentDoc = await StudentSelection.findById(Id);
 
         if (!studentDoc) {
-            return res.status(404).json({ message: "Student not found" });
+            return res.status(404).json({ message: "Student selection document not found" });
         }
 
-        const selection = studentDoc.studentSelection.find(
+        // Use the instance method we created
+        await studentDoc.updateRoleStatus(selectionId, role, isCompleted);
+        
+        const updatedSelection = studentDoc.studentSelection.find(
             (s) => s.selectionId === selectionId
         );
 
-        if (!selection) {
-            return res.status(404).json({ message: "Selection not found" });
-        }
-
-        selection.isCompleted = value;
-        selection.completedAt = new Date();
-
-        await studentDoc.save();
-
-        res.status(200).json({ message: "Selection marked as completed", data: selection });
+        res.status(200).json({ 
+            message: "Role status updated successfully",
+            data: {
+                IndustryCompleted: updatedSelection.status.IndustryCompleted,
+                TeacherCompleted: updatedSelection.status.TeacherCompleted,
+                isCompleted: updatedSelection.status.isCompleted,
+                completedAt: updatedSelection.completedAt
+            }
+        });
     } catch (error) {
-        console.error("Error marking selection as completed:", error);
-        res.status(500).json({ message: "Server error" });
+        console.error("Error updating role completion status:", error);
+        res.status(500).json({ 
+            message: error.message || "Server error" 
+        });
     }
 });
 
 
-
+// Get completion status including role-specific statuses
 router.get("/getCompletionStatus/:projectId/:selectionId", async (req, res) => {
     const { projectId, selectionId } = req.params;
 
@@ -876,7 +897,7 @@ router.get("/getCompletionStatus/:projectId/:selectionId", async (req, res) => {
         const studentDoc = await StudentSelection.findById(projectId);
 
         if (!studentDoc) {
-            return res.status(404).json({ message: "Student not found" });
+            return res.status(404).json({ message: "Student selection document not found" });
         }
 
         const selection = studentDoc.studentSelection.find(
@@ -888,7 +909,11 @@ router.get("/getCompletionStatus/:projectId/:selectionId", async (req, res) => {
         }
 
         res.status(200).json({
-            isCompleted: selection.isCompleted,
+            status: {
+                IndustryCompleted: selection.status.IndustryCompleted,
+                TeacherCompleted: selection.status.TeacherCompleted,
+                isCompleted: selection.status.isCompleted
+            },
             completedAt: selection.completedAt
         });
     } catch (error) {

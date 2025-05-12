@@ -160,9 +160,17 @@ const ProjectChart = ({ data, theme, initialChartType = "bar" }) => {
                     color: theme === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
                     drawBorder: false,
                 },
+                // automatically calculates axis ticks based on the data range
+                // ticks: {
+                //     color: theme === "dark" ? "#9ca3af" : "#6b7280",
+                //     padding: 8,
+                // },
                 ticks: {
-                    color: theme === "dark" ? "#9ca3af" : "#6b7280",
-                    padding: 8,
+                    precision: 0, // Ensures no decimal places
+                    stepSize: 1, // Forces increments of 1
+                    callback: (value) => {
+                        if (value % 1 === 0) return value; // Only show whole numbers
+                    },
                 },
             },
             x: {

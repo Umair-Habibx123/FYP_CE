@@ -498,6 +498,9 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                             <p><strong>Maximum Groups Allowed:</strong> {project.maxGroups}</p>
                             <p><strong>Belongs to Which Industry:</strong> {project.industryName}</p>
                         </div>
+                                                    <div className={`${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-900"} p-6 rounded-xl shadow-lg transition-all duration-300`}>
+                                <p><strong>Maximum Students Per Groups:</strong> {project.maxStudentsPerGroup}</p>
+                            </div>
                     </div>
 
                     {/* Required Skills */}

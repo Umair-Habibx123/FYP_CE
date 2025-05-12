@@ -42,8 +42,7 @@ const ProjectEdit = ({ project, onCancel }) => {
   const fetchIndustryNames = async (email) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
         }/api/getIndustryByEmail?email=${email}`
       );
       if (response.ok) {
@@ -216,8 +215,7 @@ const ProjectEdit = ({ project, onCancel }) => {
   // Fetch project details and ensure dates are formatted correctly
   useEffect(() => {
     fetch(
-      `${
-        import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+      `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
       }/api/fetchProjectDetailById/${id}`
     )
       .then((res) => res.json())
@@ -269,8 +267,7 @@ const ProjectEdit = ({ project, onCancel }) => {
 
       // Step 3: Update the project in the database
       const updateResponse = await fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/updateProject/${
-          project._id
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/updateProject/${project._id
         }`,
         {
           method: "PUT",
@@ -378,8 +375,7 @@ const ProjectEdit = ({ project, onCancel }) => {
 
       // Save the updated project
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/updateProject/${
-          project._id
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/updateProject/${project._id
         }`,
         {
           method: "PUT",
@@ -416,9 +412,8 @@ const ProjectEdit = ({ project, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Title
           </label>
@@ -427,19 +422,17 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="title"
             value={editedProject?.title || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           />
         </div>
 
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Project Type
           </label>
@@ -447,11 +440,10 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="projectType"
             value={editedProject?.projectType}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           >
             <option value="" disabled>
               Select Project Type
@@ -468,9 +460,8 @@ const ProjectEdit = ({ project, onCancel }) => {
       {/* Description */}
       <div>
         <label
-          className={`block text-sm font-medium mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          }`}
+          className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
         >
           Description
         </label>
@@ -478,11 +469,10 @@ const ProjectEdit = ({ project, onCancel }) => {
           name="description"
           value={editedProject?.description || ""}
           onChange={handleInputChange}
-          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none ${
-            theme === "dark"
+          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none ${theme === "dark"
               ? "bg-gray-800 text-white border-gray-700"
               : "bg-white text-gray-900 border-gray-300"
-          }`}
+            }`}
           rows="4"
         />
       </div>
@@ -491,9 +481,8 @@ const ProjectEdit = ({ project, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Difficulty Level
           </label>
@@ -501,11 +490,10 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="difficultyLevel"
             value={editedProject?.difficultyLevel || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           >
             {DIFFICULTY_LEVEL.map((type) => (
               <option key={type.value} value={type.value}>
@@ -517,9 +505,8 @@ const ProjectEdit = ({ project, onCancel }) => {
 
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Required Skills
           </label>
@@ -535,20 +522,18 @@ const ProjectEdit = ({ project, onCancel }) => {
                   e.preventDefault();
                 }
               }}
-              className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-                theme === "dark"
+              className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                   ? "bg-gray-800 text-white border-gray-700"
                   : "bg-white text-gray-900 border-gray-300"
-              }`}
+                }`}
             />
             {/* Skill Suggestions */}
             {skillInput && filteredSuggestions.length > 0 && (
               <div
-                className={`absolute z-10 mt-2 w-full rounded-lg shadow-lg max-h-60 overflow-y-auto ${
-                  theme === "dark"
+                className={`absolute z-10 mt-2 w-full rounded-lg shadow-lg max-h-60 overflow-y-auto ${theme === "dark"
                     ? "bg-gray-800 border-gray-700"
                     : "bg-white border-gray-200"
-                }`}
+                  }`}
               >
                 {filteredSuggestions.map((suggestion, index) => (
                   <button
@@ -567,11 +552,10 @@ const ProjectEdit = ({ project, onCancel }) => {
                       }));
                       setSkillInput("");
                     }}
-                    className={`block w-full text-left px-4 py-2 hover:bg-blue-500 hover:text-white transition-all duration-200 ${
-                      theme === "dark"
+                    className={`block w-full text-left px-4 py-2 hover:bg-blue-500 hover:text-white transition-all duration-200 ${theme === "dark"
                         ? "text-gray-300 hover:bg-blue-600"
                         : "text-gray-700 hover:bg-blue-100"
-                    }`}
+                      }`}
                   >
                     {suggestion}
                   </button>
@@ -584,11 +568,10 @@ const ProjectEdit = ({ project, onCancel }) => {
             {skills.map((skill, index) => (
               <span
                 key={index}
-                className={`px-3 py-1 rounded-full text-sm flex items-center ${
-                  theme === "dark"
+                className={`px-3 py-1 rounded-full text-sm flex items-center ${theme === "dark"
                     ? "bg-blue-600 text-white"
                     : "bg-blue-100 text-blue-600"
-                }`}
+                  }`}
               >
                 {skill}
                 <button
@@ -607,9 +590,8 @@ const ProjectEdit = ({ project, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Maximum Groups Allowed
           </label>
@@ -619,19 +601,17 @@ const ProjectEdit = ({ project, onCancel }) => {
             min="1"
             value={editedProject?.maxGroups || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           />
         </div>
 
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Industry Name
           </label>
@@ -639,11 +619,10 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="industryName"
             value={editedProject?.industryName || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           >
             <option value="" disabled>
               Select Industry Name
@@ -657,13 +636,38 @@ const ProjectEdit = ({ project, onCancel }) => {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+          >
+            Maximum Students Per Group
+          </label>
+          <select
+            name="maxStudentsPerGroup"
+            value={editedProject?.maxStudentsPerGroup || ""}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
+                ? "bg-gray-800 text-white border-gray-700"
+                : "bg-white text-gray-900 border-gray-300"
+              }`}
+          >
+            <option value="" disabled>Select number of students</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+
       {/* Start Date and End Date */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             Start Date
           </label>
@@ -672,19 +676,17 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="durationStartDate"
             value={editedProject?.duration?.startDate || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           />
         </div>
 
         <div>
           <label
-            className={`block text-sm font-medium mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             End Date
           </label>
@@ -693,11 +695,10 @@ const ProjectEdit = ({ project, onCancel }) => {
             name="durationEndDate"
             value={editedProject?.duration?.endDate || ""}
             onChange={handleInputChange}
-            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
-              theme === "dark"
+            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${theme === "dark"
                 ? "bg-gray-800 text-white border-gray-700"
                 : "bg-white text-gray-900 border-gray-300"
-            }`}
+              }`}
           />
         </div>
       </div>
@@ -705,9 +706,8 @@ const ProjectEdit = ({ project, onCancel }) => {
       {/* Additional Info */}
       <div>
         <label
-          className={`block text-sm font-medium mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          }`}
+          className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
         >
           Additional Info
         </label>
@@ -715,11 +715,10 @@ const ProjectEdit = ({ project, onCancel }) => {
           name="additionalInfo"
           value={editedProject?.additionalInfo || ""}
           onChange={handleInputChange}
-          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none ${
-            theme === "dark"
+          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none ${theme === "dark"
               ? "bg-gray-800 text-white border-gray-700"
               : "bg-white text-gray-900 border-gray-300"
-          }`}
+            }`}
           rows="4"
         />
       </div>
@@ -727,22 +726,20 @@ const ProjectEdit = ({ project, onCancel }) => {
       {/* Attachments Section */}
       <div>
         <label
-          className={`block text-sm font-medium mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          }`}
+          className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
         >
           Attachments
         </label>
 
         <div
-          className={`mt-2 border rounded-md shadow-sm p-2 transition-all duration-300 ${
-            theme === "dark"
+          className={`mt-2 border rounded-md shadow-sm p-2 transition-all duration-300 ${theme === "dark"
               ? "bg-gray-800 border-gray-600 text-gray-100" // Dark mode
               : "bg-white border-gray-300 text-gray-800" // Light mode
-          }`}
+            }`}
         >
           {editedProject?.attachments &&
-          editedProject.attachments.length > 0 ? (
+            editedProject.attachments.length > 0 ? (
             <ul
               className="divide-y"
               style={
@@ -754,33 +751,29 @@ const ProjectEdit = ({ project, onCancel }) => {
               {editedProject.attachments.map((attachment) => (
                 <li
                   key={attachment?._id?.$oid || attachment?.fileUrl}
-                  className={`flex justify-between items-center p-2 ${
-                    theme === "dark" ? "bg-gray-700" : "bg-gray-50 text-white"
-                  }`}
+                  className={`flex justify-between items-center p-2 ${theme === "dark" ? "bg-gray-700" : "bg-gray-50 text-white"
+                    }`}
                 >
                   <a
-                    href={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${
-                      attachment?.fileUrl
-                    }`}
+                    href={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${attachment?.fileUrl
+                      }`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${
-                      theme === "dark" ? "text-blue-400" : "text-blue-600"
-                    } hover:underline`}
+                    className={`${theme === "dark" ? "text-blue-400" : "text-blue-600"
+                      } hover:underline`}
                   >
                     {attachment?.fileName || "Unknown File"}
                   </a>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-sm ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-500"
-                      }`}
+                      className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-500"
+                        }`}
                     >
                       Uploaded at:{" "}
                       {attachment?.uploadedAt?.$date?.$numberLong
                         ? new Date(
-                            parseInt(attachment.uploadedAt.$date.$numberLong)
-                          ).toLocaleString()
+                          parseInt(attachment.uploadedAt.$date.$numberLong)
+                        ).toLocaleString()
                         : "N/A"}
                     </span>
                     {deletingFile === attachment.fileUrl ? (
@@ -793,9 +786,8 @@ const ProjectEdit = ({ project, onCancel }) => {
                         onClick={() =>
                           handleDeleteAttachment(attachment.fileUrl)
                         }
-                        className={`${
-                          theme === "dark" ? "text-red-400" : "text-red-600"
-                        } hover:opacity-80`}
+                        className={`${theme === "dark" ? "text-red-400" : "text-red-600"
+                          } hover:opacity-80`}
                       >
                         Remove File
                       </button>
@@ -816,9 +808,8 @@ const ProjectEdit = ({ project, onCancel }) => {
               {files.map((file, index) => (
                 <li
                   key={index}
-                  className={`flex justify-between items-center p-2 rounded-lg  ${
-                        theme === "dark" ? "bg-transparent" : "bg-white"
-                      }`}
+                  className={`flex justify-between items-center p-2 rounded-lg  ${theme === "dark" ? "bg-transparent" : "bg-white"
+                    }`}
                 >
                   <span>{file.name}</span>
                   <button
@@ -846,21 +837,19 @@ const ProjectEdit = ({ project, onCancel }) => {
       <div className="flex justify-end gap-4">
         <button
           onClick={onCancel}
-          className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-            theme === "dark"
+          className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${theme === "dark"
               ? "bg-gray-700 text-white hover:bg-gray-600"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
+            }`}
         >
           Cancel
         </button>
         <button
           onClick={() => setIsModalOpen(true)}
-          className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-all duration-300 ${
-            theme === "dark"
+          className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-all duration-300 ${theme === "dark"
               ? "bg-blue-600 text-white hover:bg-blue-700"
               : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
+            }`}
         >
           <Save /> Save Changes
         </button>
