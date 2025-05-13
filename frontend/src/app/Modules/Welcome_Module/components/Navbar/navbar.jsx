@@ -106,14 +106,14 @@ const Navbar = () => {
             transition={{ duration: 0.5 }}
             className={`fixed top-0 left-0 w-[100%] h-[70px] md:h-[90px] max-w-screen z-50 transition-all duration-300 ${isScrolled ? "bg-black text-white shadow-lg" : "bg-transparent text-white"} px-6 py-4 ${visible ? "translate-y-0" : "-translate-y-full"}`}
         >
-            <div id="center" className="hidden lg:grid grid-cols-12 items-center justify-center w-full">
-                <motion.div className="col-span-4 flex items-center justify-end w-full max-w-screen-xl" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+            <div id="center" className="hidden xl:grid grid-cols-12 items-center justify-center w-full">
+                <motion.div className="col-span-3 flex items-center justify-end w-full max-w-screen-xl" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
                     <Link to="/">
                         <img src={logo} alt="Logo" className="h-10 object-cover" />
                     </Link>
                 </motion.div>
 
-                <motion.ul className="hidden lg:flex col-span-6 justify-center space-x-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                <motion.ul className="hidden xl:flex col-span-7 justify-center space-x-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
                     {["About Us", "How It Works", "Project Ideas", "Success Stories", "Contact Us"].map((item, index) => {
                         const path = `/${item.toLowerCase().replace(/ /g, "-")}`;
                         const isActive = location.pathname === path;
@@ -135,7 +135,7 @@ const Navbar = () => {
                     })}
                 </motion.ul>
                 {/* Right Section: Show User Profile or "Get Started" Button */}
-                <motion.div className="hidden lg:flex col-span-2 justify-start" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
+                <motion.div className="hidden xl:flex col-span-2 justify-start" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
                     {user ? (
                         <div className="relative cursor-pointer" onMouseEnter={() => setDropdownOpen(true)} onMouseLeave={() => setDropdownOpen(false)}>
                             {isProfilePicLoading ? (
@@ -170,16 +170,12 @@ const Navbar = () => {
                                 Get Started
                             </motion.button>
 
-
-                            {/* <motion.button whileHover={{ scale: 1.1 }} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                                Get Started
-                            </motion.button> */}
                         </Link>
                     )}
                 </motion.div>
             </div>
 
-            <div className="lg:hidden flex justify-between items-center w-full">
+            <div className="xl:hidden flex justify-between items-center w-full">
                 <div className="flex-1 flex justify-center">
                     <Link to="/">
                         <img src={logo} alt="Logo" className="h-10 object-cover p-1" />
@@ -192,9 +188,9 @@ const Navbar = () => {
 
             <AnimatePresence>
                 {menuOpen && (
-                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="absolute top-16 left-0 w-full bg-black text-white shadow-md lg:hidden">
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="absolute top-16 left-0 w-full bg-black text-white shadow-md xl:hidden">
                         <ul className="flex flex-col space-y-4 text-center py-6">
-                            {["About Us", "How It Works", "Project Ideas", "Contact Us"].map((item, index) => (
+                            {["About Us", "How It Works", "Project Ideas", "Success Stories", "Contact Us"].map((item, index) => (
                                 <motion.li key={index} className="hover:text-blue-500 cursor-pointer transition px-4" whileHover={{ scale: 1.1 }}>
                                     <Link to={`/${item.toLowerCase().replace(/ /g, "-")}`} onClick={() => setMenuOpen(false)}>{item}</Link>
                                 </motion.li>

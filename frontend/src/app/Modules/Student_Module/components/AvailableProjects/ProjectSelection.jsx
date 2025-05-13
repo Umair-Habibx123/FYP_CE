@@ -23,6 +23,8 @@ const ProjectSelection = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isJoiningGroup, setIsJoiningGroup] = useState(false);
     const [isCreatingNewGroup, setIsCreatingNewGroup] = useState(false);
+    const [alreadyClaimedBySameUniversity, setAlreadyClaimedBySameUniversity] = useState(false);
+    const [claimedByInfo, setClaimedByInfo] = useState(null);
 
 
     const containerRef = useRef(null);
@@ -41,6 +43,26 @@ const ProjectSelection = () => {
         document.body.className = theme;
     }, [theme]);
 
+    const checkUniversityClaim = async () => {
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/check-university?docId=${id}&university=${user.studentDetails.university}`
+            );
+            const data = await response.json();
+
+            if (data.alreadySelected) {
+                setAlreadyClaimedBySameUniversity(true);
+
+                // Fetch who claimed it if needed (you might need another API endpoint for this)
+                // For now, we'll just show a generic message
+                setClaimedByInfo({
+                    message: "This project has already been claimed by someone from your university."
+                });
+            }
+        } catch (error) {
+            console.error("Error checking university claim:", error);
+        }
+    };
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -85,6 +107,9 @@ const ProjectSelection = () => {
                         setInvalidProjectSearch(true);
                     }
                 }
+
+                // 4. Check if project is already claimed by same university
+                await checkUniversityClaim();
             } catch (err) {
                 console.error("Error in combined data fetching:", err);
                 setInvalidProjectSearch(true);
@@ -259,6 +284,23 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                 </div>
             </motion.div>
 
+            {alreadyClaimedBySameUniversity && !isUserInProject && (
+                <div className={`m-4 p-4 rounded-lg ${theme === "dark" ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>
+                    <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <h3 className="font-bold">Project Claimed</h3>
+                    </div>
+                    <p className="mt-2">
+                        {claimedByInfo?.message || "This project has already been claimed by another group from your university."}
+                    </p>
+                    <p className="mt-1 text-sm">
+                        You can only join existing groups for this project if invited.
+                    </p>
+                </div>
+            )}
+
             {isProjectExpired(project.duration.endDate) && (
                 <div className={`m-4 p-4 rounded-lg text-center ${theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-200 text-gray-800"}`}>
                     <p className="font-semibold">This project has expired and can no longer take actions.</p>
@@ -318,9 +360,9 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                             <p><strong>Maximum Groups Allowed:</strong> {project.maxGroups}</p>
                             <p><strong>Belongs to Which Industry:</strong> {project.industryName}</p>
                         </div>
-                                                    <div className={`${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-900"} p-6 rounded-xl shadow-lg transition-all duration-300`}>
-                                <p><strong>Maximum Students Per Groups:</strong> {project.maxStudentsPerGroup}</p>
-                            </div>
+                        <div className={`${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-900"} p-6 rounded-xl shadow-lg transition-all duration-300`}>
+                            <p><strong>Maximum Students Per Groups:</strong> {project.maxStudentsPerGroup}</p>
+                        </div>
                     </div>
 
                     {/* Required Skills */}
@@ -373,22 +415,24 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
 
                     {!isUserInProject && !isProjectExpired(project.duration.endDate) && (
                         <div className="max-w-6xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
-                            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between">
+                            <div className="flex flex-col space-y-4">
                                 {/* Join Existing Group Button */}
-                                <button
-                                    onClick={() => setIsModalOpen(true)}
-                                    className={`w-full sm:w-auto px-6 py-3 ${isUserInProject || isCreatingNewGroup ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'} text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center space-x-2`}
-                                    disabled={isUserInProject || isCreatingNewGroup}
-                                >
-                                    {isJoiningGroup ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <>
-                                            <Users className="w-5 h-5" />
-                                            <span>JOIN EXISTING GROUP FOR THIS PROJECT</span>
-                                        </>
-                                    )}
-                                </button>
+                                {alreadyClaimedBySameUniversity && (
+                                    <button
+                                        onClick={() => setIsModalOpen(true)}
+                                        className={`w-full px-6 py-3 ${isUserInProject || isCreatingNewGroup ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'} text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center space-x-2`}
+                                        disabled={isUserInProject || isCreatingNewGroup}
+                                    >
+                                        {isJoiningGroup ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Users className="w-5 h-5" />
+                                                <span>JOIN EXISTING GROUP FOR THIS PROJECT</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
 
                                 {/* Join Group Modal */}
                                 <JoinGroupModal
@@ -401,26 +445,28 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                                 />
 
                                 {/* Select Project as New Group Button */}
-                                <button
-                                    onClick={handleSelectProjectAsNewGroup}
-                                    className={`w-full sm:w-auto px-6 py-3 ${isUserInProject || isJoiningGroup ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center space-x-2`}
-                                    disabled={isUserInProject || isJoiningGroup}
-                                >
-                                    {isCreatingNewGroup ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <>
-                                            <PlusCircle className="w-5 h-5" />
-                                            <span>SELECT PROJECT AS NEW GROUP</span>
-                                        </>
-                                    )}
-                                </button>
+                                {!alreadyClaimedBySameUniversity && (
+                                    <button
+                                        onClick={handleSelectProjectAsNewGroup}
+                                        className={`w-full px-6 py-3 ${isUserInProject || isJoiningGroup ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center space-x-2`}
+                                        disabled={isUserInProject || isJoiningGroup}
+                                    >
+                                        {isCreatingNewGroup ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <PlusCircle className="w-5 h-5" />
+                                                <span>SELECT PROJECT AS NEW GROUP</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
                 </motion.div>
             </motion.div>
-        </div>
+        </div >
 
     );
 };

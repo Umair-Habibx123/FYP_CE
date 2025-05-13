@@ -220,7 +220,7 @@ const ViewSubmissions = () => {
     }
 
     const handleSubmitClick = () => {
-        if (selectionDetails?.isCompleted) {
+        if (selectionDetails?.status?.isCompleted) {
             setIsCompletedModalOpen(true);
         } else {
             setIsModalOpen(true);
@@ -355,34 +355,91 @@ const ViewSubmissions = () => {
                     </div>
                 )}
 
-                {selectionDetails?.isCompleted ? (
-                    <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-3 md:gap-4 ${theme === "dark" ? "bg-green-900 text-green-100" : "bg-green-100 text-green-900"}`}>
-                        <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-green-500 mt-0.5 sm:mt-1 shrink-0" />
-                        <div>
-                            <h3 className="text-sm sm:text-base md:text-lg font-semibold">Project Completed</h3>
-                            <p className="text-xs sm:text-sm md:text-base">This project has been marked as completed. No more submissions can be made.</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-3 md:gap-4 ${theme === "dark" ? "bg-yellow-900 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
-                        <Clock className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-yellow-500 mt-0.5 sm:mt-1 shrink-0" />
 
-                        <div className="flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
-                            <div className="flex-1">
-                                <h3 className="text-sm sm:text-base md:text-lg font-semibold">Project Pending</h3>
-                                {isProjectExpired(project.duration.endDate) ? (
-                                    <p className="text-xs sm:text-sm md:text-base">
-                                        This project is still in progress. But cannot Submit...
-                                    </p>
-                                ) : (
-                                    <p className="text-xs sm:text-sm md:text-base">
-                                        This project is still in progress. You can continue making submissions.
-                                    </p>
+                {/* Project Status Alert */}
+                <div className="space-y-4">
+                    {isProjectExpired(project.duration.endDate) && !selectionDetails?.status?.isCompleted && (
+                        <div className={`p-4 rounded-lg flex items-center ${theme === "dark" ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>
+                            <AlertCircle className="w-6 h-6 mr-3" />
+                            <div>
+                                <h3 className="font-bold">Project Deadline Passed</h3>
+                                <p>The project end date has passed. Please contact your supervisor for further instructions.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectionDetails?.status?.isCompleted ? (
+                        <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-green-900 text-green-100" : "bg-green-100 text-green-900"}`}>
+                            <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-500 mt-1 shrink-0" />
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold">Project Completed</h3>
+                                <p className="text-sm sm:text-base">This project has been marked as completed. No more submissions can be made.</p>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span
+                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                            ? selectionDetails.status.IndustryCompleted
+                                                ? 'bg-blue-800 text-blue-200'
+                                                : 'bg-gray-700 text-gray-300'
+                                            : selectionDetails.status.IndustryCompleted
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : 'bg-gray-100 text-gray-600'
+                                            }`}
+                                    >
+                                        {selectionDetails.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
+                                    </span>
+                                    <span
+                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                            ? selectionDetails.status.TeacherCompleted
+                                                ? 'bg-purple-800 text-purple-200'
+                                                : 'bg-gray-700 text-gray-300'
+                                            : selectionDetails.status.TeacherCompleted
+                                                ? 'bg-purple-100 text-purple-800'
+                                                : 'bg-gray-100 text-gray-600'
+                                            }`}
+                                    >
+                                        {selectionDetails.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : !isProjectExpired(project.duration.endDate) && (
+                        <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-yellow-900 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
+                            <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500 mt-1 shrink-0" />
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold">Project Pending</h3>
+                                <p className="text-sm sm:text-base">This project is still in progress. You can continue making submissions.</p>
+                                {selectionDetails?.status && (
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                ? selectionDetails.status.IndustryCompleted
+                                                    ? 'bg-blue-800 text-blue-200'
+                                                    : 'bg-gray-700 text-gray-300'
+                                                : selectionDetails.status.IndustryCompleted
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-gray-100 text-gray-600'
+                                                }`}
+                                        >
+                                            {selectionDetails.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
+                                        </span>
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                ? selectionDetails.status.TeacherCompleted
+                                                    ? 'bg-purple-800 text-purple-200'
+                                                    : 'bg-gray-700 text-gray-300'
+                                                : selectionDetails.status.TeacherCompleted
+                                                    ? 'bg-purple-100 text-purple-800'
+                                                    : 'bg-gray-100 text-gray-600'
+                                                }`}
+                                        >
+                                            {selectionDetails.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
 
 

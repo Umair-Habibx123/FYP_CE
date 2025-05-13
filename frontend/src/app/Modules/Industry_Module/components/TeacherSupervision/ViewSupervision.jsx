@@ -7,7 +7,7 @@ import AddCommentModal from './Modal/AddCommentModal.jsx';
 import ViewTeacherModal from './Modal/ViewTeacherDetails.jsx';
 import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from "../../../../../auth/AuthContext.jsx";
-import { Lock, ArrowLeft, Search, FolderSearch, Check, X, School,User, BadgeCheck, Mail,  Trash2, Eye, Loader2, LogIn } from "lucide-react";
+import { Lock, ArrowLeft, Search, FolderSearch, Check, X, School, User, BadgeCheck, Mail, Trash2, Eye, Loader2, LogIn } from "lucide-react";
 
 
 const ViewSupervision = () => {
@@ -178,12 +178,10 @@ const ViewSupervision = () => {
         (!searchQuery || supervision.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Check if any teacher from a university is already approved
-    const isUniversityApproved = (university) => {
-        return supervisions.some(supervision =>
-            supervision.university === university && supervision.responseFromInd.status === 'approved'
-        );
-    };
+
+    const hasApprovedTeacher = supervisions.some(
+        supervision => supervision.responseFromInd.status === 'approved'
+    );
 
     if (!project || isAuthLoading) {
         return <Loading />;
@@ -234,10 +232,10 @@ const ViewSupervision = () => {
     }
 
     return (
-        <div className={`w-full min-h-screen p-6 -mt-[70px] md:-mt-[90px] transition-all duration-300 ${theme === "dark" 
-            ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100" 
+        <div className={`w-full min-h-screen p-6 -mt-[70px] md:-mt-[90px] transition-all duration-300 ${theme === "dark"
+            ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100"
             : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900"}`}>
-        
+
             {/* Header */}
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
@@ -248,14 +246,14 @@ const ViewSupervision = () => {
                         <ArrowLeft className="w-5 h-5" />
                         <span>Back to Dashboard</span>
                     </button>
-        
+
                     <h2 className="text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
                         Teacher Supervision
                     </h2>
-        
+
                     <div className="w-full md:w-auto"></div> {/* Spacer for alignment */}
                 </div>
-        
+
                 {/* Modals */}
                 <AddCommentModal
                     isOpen={isModalOpen}
@@ -265,20 +263,20 @@ const ViewSupervision = () => {
                     comments={comments}
                     setComments={setComments}
                 />
-        
+
                 <ViewTeacherModal
                     isOpen={isViewModalOpen}
                     onClose={handleCloseModal}
                     userDetails={selectedUser}
                     theme={theme}
                 />
-        
+
                 <ToastContainer position="top-right" theme={theme} />
-        
+
                 {/* Search and Filter */}
                 <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className={`flex items-center rounded-xl p-1 shadow-sm transition-all duration-300 ${theme === "dark" 
-                        ? "bg-gray-800 border-gray-700 focus-within:border-blue-500 border" 
+                    <div className={`flex items-center rounded-xl p-1 shadow-sm transition-all duration-300 ${theme === "dark"
+                        ? "bg-gray-800 border-gray-700 focus-within:border-blue-500 border"
                         : "bg-white border-gray-200 focus-within:border-blue-400 border"}`}>
                         <div className="p-2 text-gray-500">
                             <Search className="w-5 h-5" />
@@ -288,19 +286,19 @@ const ViewSupervision = () => {
                             placeholder="Search teachers..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`w-full p-2 focus:outline-none rounded-r-lg ${theme === "dark" 
-                                ? "bg-gray-800 placeholder-gray-500" 
+                            className={`w-full p-2 focus:outline-none rounded-r-lg ${theme === "dark"
+                                ? "bg-gray-800 placeholder-gray-500"
                                 : "bg-white placeholder-gray-400"}`}
                         />
                     </div>
-        
+
                     <div className="flex gap-4">
                         <select
                             id="university"
                             value={selectedUniversity}
                             onChange={(e) => setSelectedUniversity(e.target.value)}
-                            className={`flex-1 p-3 rounded-xl shadow-sm transition-all duration-200 ${theme === "dark" 
-                                ? "bg-gray-800 border-gray-700 text-white" 
+                            className={`flex-1 p-3 rounded-xl shadow-sm transition-all duration-200 ${theme === "dark"
+                                ? "bg-gray-800 border-gray-700 text-white"
                                 : "bg-white border-gray-200 text-gray-900"} border`}
                         >
                             {uniqueUniversities.length > 0 ? (
@@ -315,7 +313,7 @@ const ViewSupervision = () => {
                         </select>
                     </div>
                 </div>
-        
+
                 {/* Table Content */}
                 {isLoading ? (
                     <div className="flex justify-center items-center h-64">
@@ -327,14 +325,14 @@ const ViewSupervision = () => {
                         </div>
                     </div>
                 ) : filteredSupervisions.length > 0 ? (
-                    <div className={`rounded-2xl overflow-hidden shadow-xl ${theme === "dark" 
-                        ? "bg-gray-800/80 border border-gray-700" 
+                    <div className={`rounded-2xl overflow-hidden shadow-xl ${theme === "dark"
+                        ? "bg-gray-800/80 border border-gray-700"
                         : "bg-white border border-gray-100"}`}>
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className={`${theme === "dark" 
-                                        ? "bg-gradient-to-r from-gray-700 to-gray-800" 
+                                    <tr className={`${theme === "dark"
+                                        ? "bg-gradient-to-r from-gray-700 to-gray-800"
                                         : "bg-gradient-to-r from-gray-100 to-gray-200"} text-left`}>
                                         <th className="p-4 font-semibold">Teacher</th>
                                         <th className="p-4 font-semibold">University</th>
@@ -345,23 +343,23 @@ const ViewSupervision = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {filteredSupervisions.map((supervision, index) => (
-                                        <tr 
-                                            key={index} 
-                                            className={`transition-colors duration-150 ${theme === "dark" 
-                                                ? "hover:bg-gray-700/50" 
+                                        <tr
+                                            key={index}
+                                            className={`transition-colors duration-150 ${theme === "dark"
+                                                ? "hover:bg-gray-700/50"
                                                 : "hover:bg-gray-50"}`}
                                         >
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === "dark" 
-                                                        ? "bg-gray-700" 
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === "dark"
+                                                        ? "bg-gray-700"
                                                         : "bg-gray-100"}`}>
                                                         <User className="w-5 h-5 text-blue-500" />
                                                     </div>
                                                     <div>
                                                         <p className="font-medium">{supervision.fullName}</p>
-                                                        <p className={`text-sm ${theme === "dark" 
-                                                            ? "text-gray-400" 
+                                                        <p className={`text-sm ${theme === "dark"
+                                                            ? "text-gray-400"
                                                             : "text-gray-500"}`}>
                                                             {supervision.responseFromInd.comments || "No comments"}
                                                         </p>
@@ -378,8 +376,8 @@ const ViewSupervision = () => {
                                                 </div>
                                             </td>
                                             <td className="p-4">
-                                                <a 
-                                                    href={`mailto:${supervision.email}`} 
+                                                <a
+                                                    href={`mailto:${supervision.email}`}
                                                     className="flex items-center gap-2 hover:text-blue-500 transition-colors"
                                                 >
                                                     <Mail className="w-4 h-4" />
@@ -387,38 +385,37 @@ const ViewSupervision = () => {
                                                 </a>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${supervision.responseFromInd.status === "approved" 
-                                                    ? (theme === "dark" 
-                                                        ? "bg-green-900/50 text-green-300" 
-                                                        : "bg-green-100 text-green-800") 
-                                                    : supervision.responseFromInd.status === "rejected" 
-                                                        ? (theme === "dark" 
-                                                            ? "bg-red-900/50 text-red-300" 
-                                                            : "bg-red-100 text-red-800") 
-                                                        : (theme === "dark" 
-                                                            ? "bg-yellow-900/50 text-yellow-300" 
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${supervision.responseFromInd.status === "approved"
+                                                    ? (theme === "dark"
+                                                        ? "bg-green-900/50 text-green-300"
+                                                        : "bg-green-100 text-green-800")
+                                                    : supervision.responseFromInd.status === "rejected"
+                                                        ? (theme === "dark"
+                                                            ? "bg-red-900/50 text-red-300"
+                                                            : "bg-red-100 text-red-800")
+                                                        : (theme === "dark"
+                                                            ? "bg-yellow-900/50 text-yellow-300"
                                                             : "bg-yellow-100 text-yellow-800")}`}>
                                                     {supervision.responseFromInd.status}
                                                 </span>
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-wrap gap-2">
-                                                    {!isUniversityApproved(supervision.university) &&
-                                                        supervision.responseFromInd.status !== "approved" && (
-                                                            <button
-                                                                onClick={() => handleApprove(supervision.teacherId, supervision.university)}
-                                                                className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark" 
-                                                                    ? "bg-green-600 hover:bg-green-700" 
-                                                                    : "bg-green-500 hover:bg-green-600"} text-white shadow-sm hover:shadow-md`}
-                                                            >
-                                                                <Check className="w-4 h-4" />
-                                                                <span>Approve</span>
-                                                            </button>
-                                                        )}
+                                                    {!hasApprovedTeacher && supervision.responseFromInd.status !== "approved" && (
+                                                        <button
+                                                            onClick={() => handleApprove(supervision.teacherId, supervision.university)}
+                                                            className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark"
+                                                                ? "bg-green-600 hover:bg-green-700"
+                                                                : "bg-green-500 hover:bg-green-600"} text-white shadow-sm hover:shadow-md`}
+                                                        >
+                                                            <Check className="w-4 h-4" />
+                                                            <span>Approve</span>
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleReject(supervision.teacherId)}
-                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark" 
-                                                            ? "bg-red-600 hover:bg-red-700" 
+                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark"
+                                                            ? "bg-red-600 hover:bg-red-700"
                                                             : "bg-red-500 hover:bg-red-600"} text-white shadow-sm hover:shadow-md`}
                                                     >
                                                         <X className="w-4 h-4" />
@@ -426,8 +423,8 @@ const ViewSupervision = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => handleViewDetail(supervision.teacherId)}
-                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark" 
-                                                            ? "bg-blue-600 hover:bg-blue-700" 
+                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark"
+                                                            ? "bg-blue-600 hover:bg-blue-700"
                                                             : "bg-blue-500 hover:bg-blue-600"} text-white shadow-sm hover:shadow-md`}
                                                         disabled={loadingStates[supervision.teacherId]}
                                                     >
@@ -442,8 +439,8 @@ const ViewSupervision = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(supervision.teacherId)}
-                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark" 
-                                                            ? "bg-gray-600 hover:bg-gray-700" 
+                                                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${theme === "dark"
+                                                            ? "bg-gray-600 hover:bg-gray-700"
                                                             : "bg-gray-500 hover:bg-gray-600"} text-white shadow-sm hover:shadow-md`}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -458,8 +455,8 @@ const ViewSupervision = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className={`rounded-2xl p-12 text-center ${theme === "dark" 
-                        ? "bg-gray-800/50 border border-gray-700" 
+                    <div className={`rounded-2xl p-12 text-center ${theme === "dark"
+                        ? "bg-gray-800/50 border border-gray-700"
                         : "bg-white border border-gray-100"} shadow-xl`}>
                         <div className="max-w-md mx-auto flex flex-col items-center">
                             <FolderSearch className="w-16 h-16 text-gray-400 mb-4" />
@@ -467,8 +464,8 @@ const ViewSupervision = () => {
                                 No Supervisions Found
                             </h3>
                             <p className={`mb-6 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                                {searchQuery || selectedUniversity !== "all" 
-                                    ? "No results match your search criteria" 
+                                {searchQuery || selectedUniversity !== "all"
+                                    ? "No results match your search criteria"
                                     : "There are currently no teacher supervisions to display"}
                             </p>
                             <button
@@ -476,8 +473,8 @@ const ViewSupervision = () => {
                                     setSearchQuery("");
                                     setSelectedUniversity("all");
                                 }}
-                                className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 ${theme === "dark" 
-                                    ? "bg-gray-700 hover:bg-gray-600" 
+                                className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 ${theme === "dark"
+                                    ? "bg-gray-700 hover:bg-gray-600"
                                     : "bg-gray-200 hover:bg-gray-300"}`}
                             >
                                 Reset Filters
@@ -490,7 +487,5 @@ const ViewSupervision = () => {
     );
 
 };
-
-
 
 export default ViewSupervision;

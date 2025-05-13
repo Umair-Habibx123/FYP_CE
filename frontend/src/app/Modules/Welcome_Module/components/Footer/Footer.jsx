@@ -92,7 +92,7 @@ const Footer = () => {
                                 Quick Links
                                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"></span>
                             </h3>
-                            <ul className="space-y-3 w-full">
+                            <ul className="space-y-3 flex flex-col items-center md:items-start w-full">
                                 {quickLinks.map((name, index) => (
                                     <motion.li
                                         key={index}
@@ -150,13 +150,13 @@ const Footer = () => {
                             className="flex flex-col items-center md:items-start"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
                         >
                             <h3 className="text-lg font-semibold text-white mb-4 relative inline-block">
-                                Resources
+                                Resouces
                                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"></span>
                             </h3>
-                            <ul className="space-y-3 w-full">
+                            <ul className="space-y-3 flex flex-col items-center md:items-start w-full">
                                 {resources.map((name, index) => (
                                     <motion.li
                                         key={index}

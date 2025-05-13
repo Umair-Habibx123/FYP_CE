@@ -188,26 +188,6 @@ creation cammands:
         "comments": "Supervision accepted by industry.",
         "actionedAt": "2025-01-21T09:00:00.000Z"
       }
-    },
-    {
-      "teacherId": "teacher2@university.edu",
-      "fullName": "Dr. Sarwar",
-      "university": "NUST",
-      "responseFromInd": {
-        "status": "pending", 
-        "comments": null,
-        "actionedAt": null
-      }
-    },
-    {
-      "teacherId": "teacher3@university.edu",
-      "fullName": "Dr. Umair",
-      "university": "LUMS",
-      "responseFromInd": {
-        "status": "rejected", 
-        "comments": "Industry does not require this supervision.",
-        "actionedAt": "2025-01-21T09:00:00.000Z"
-      }
     }
   ]
 }
@@ -225,27 +205,13 @@ creation cammands:
       "groupMembers": ["Dr. hammad", "person2", "person3"],
       "university": "numl",
       "joinedAt": "2025-01-22T10:30:00.000Z",  //when first student applied
-      "isCompleted" : true/false,
+      "status": {
+        "IndustryCompleted": true,
+        "TeacherCompleted": true,
+        "isCompleted": true
+      },
       "completedAt" :  "2025-01-22T10:30:00.000Z",
-    },
-     {
-      "selectionId": "group_sel_010",
-      "groupLeader": "Dr. khan",  //one who applied first in this selection
-      "groupMembers": ["Dr. khan", "person2", "person3"],
-      "university": "numl",
-      "joinedAt": "2025-01-22T10:30:00.000Z"  //when first student applied
-       "isCompleted" : true/false,
-      "completedAt" :  "2025-01-22T10:30:00.000Z",
-    },
-     {
-      "selectionId": "group_sel_015",
-      "groupLeader": "Dr. salman",  //one who applied first in this selection
-      "groupMembers": ["Dr. salman", "person2", "person3"],
-      "university": "numl",
-      "joinedAt": "2025-01-22T10:30:00.000Z"  //when first student applied
-       "isCompleted" : true/false,
-      "completedAt" :  "2025-01-22T10:30:00.000Z",
-    },
+    }
   ],
 }
 

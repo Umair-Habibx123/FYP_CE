@@ -23,7 +23,8 @@ import {
 } from "./controllers/industryGraphController.js";
 
 import { getTeacherStats, getUniversityTeacherStats } from "./controllers/teacherGraphController.js";
-import { getStudentCompletionStats, getStudentRatings } from "./controllers/studentGraphController.js"
+import { getStudentCompletionStats, getStudentRatings } from "./controllers/studentGraphController.js";
+import { getSuccessStories } from "./controllers/successStoriesController.js";
 import initializePrivacyPolicies from './scripts/privacyPolicyInitializer.js';
 import initializeAdminUser from './scripts/adminUserInitializer.js';
 
@@ -119,6 +120,9 @@ app.get("/student/StudentRatings/:studentId", getStudentRatings);
 
 app.get("/teacher/TeacherStats/:teacherId", getTeacherStats);
 app.get("/teacher/UniversityStats/:university", getUniversityTeacherStats);
+
+
+app.get("/success-stories", getSuccessStories);
 
 
 

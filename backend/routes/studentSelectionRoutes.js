@@ -51,6 +51,7 @@ router.get('/fetchUserSelectedProjects', async (req, res) => {
     }
 });
 
+
 router.get("/fetchselectionDetails/:projectId/:studentId", async (req, res) => {
     try {
         const { projectId, studentId } = req.params;
@@ -92,7 +93,7 @@ router.get("/fetchselectionDetails/:projectId/:studentId", async (req, res) => {
                     groupLeader: groupLeaderDetails,
                     groupMembers: groupMembersDetails,
                     joinedAt: selection.joinedAt,
-                    isCompleted: selection.isCompleted ?? false,
+                    status: selection.status,
                     completedAt: selection.completedAt ?? null,
                 },
             ],
@@ -191,67 +192,33 @@ router.post("/JoinExistingGroupforProject", async (req, res) => {
 });
 
 
+router.get('/check-university', async (req, res) => {
+  const { docId, university } = req.query;
 
-// api allowed only total all selection from all university must be equal to fixed project max groups
+  if (!docId || !university) {
+    return res.status(400).json({ error: 'docId and university are required' });
+  }
 
-// router.post("/SelectProjectAsNewGroup", async (req, res) => {
-//     const { projectId, userEmail, userUniversity } = req.body;
+  try {
+    const document = await StudentSelection.findById(docId);
 
-//     try {
+    if (!document) {
+       return res.json({ alreadySelected: false });
+    }
 
-//         const projectDetails = await Project.findById(projectId);
+    const hasUniversity = document.studentSelection.some(
+      (selection) => selection.university === university
+    );
 
-//         if (!projectDetails) {
-//             return res.status(404).json({ message: "Project not found" });
-//         }
-
-//         let studentSelection = await StudentSelection.findById(projectId);
-//         const currentGroupCount = studentSelection ? studentSelection.studentSelection.length : 0;
-
-//         if (currentGroupCount >= projectDetails.maxGroups) {
-//             return res.status(400).json({ message: "Maximum number of groups reached for this project" });
-//         }
-
-//         const currentDate = new Date();
-//         const projectEndDate = new Date(projectDetails.duration.endDate);
-
-//         if (currentDate > projectEndDate) {
-//             return res.status(400).json({ message: "The project's end date has passed. No new groups can be created." });
-//         }
-
-//         if (!studentSelection) {
-//             studentSelection = new StudentSelection({
-//                 _id: projectId,
-//                 studentSelection: [],
-//             });
-//         }
-
-//         const existingSelections = studentSelection.studentSelection.map(sel => sel.selectionId);
-
-//         const selectionId = await generateUniqueSelectionId(userEmail, projectId, existingSelections);
-
-//         const newSelection = {
-//             selectionId,
-//             groupLeader: userEmail,
-//             university: userUniversity,
-//             groupMembers: [userEmail],
-//             joinedAt: new Date(),
-//         };
-
-//         studentSelection.studentSelection.push(newSelection);
-
-//         await studentSelection.save();
-
-//         res.status(201).json({ message: "New group created successfully", selectionId, studentSelection });
-//     } catch (error) {
-//         res.status(500).json({ message: "Internal server error", error: error.message });
-//     }
-// });
+    return res.json({ alreadySelected: hasUniversity });
+  } catch (error) {
+    console.error('Error checking university selection:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 // api allowed each specific uni selection lenght must be equal to fixed project max groups... can total selection excedds as approval excedds
-
-
 
 
 router.post("/SelectProjectAsNewGroup", async (req, res) => {
@@ -624,7 +591,7 @@ router.get("/fetchProjectsWithGroupMembersAndSelectionDetails", async (req, res)
                         .map(email => memberDetailsMap.get(email))
                         .filter(Boolean), // Remove any undefined values
                     joinedAt: userSelection.joinedAt,
-                    isCompleted: userSelection.isCompleted ?? false,
+                    isCompleted: userSelection.status?.isCompleted || false,
                     completedAt: userSelection.completedAt ?? null
                 };
 

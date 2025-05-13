@@ -88,14 +88,17 @@ const AvailableProjects = ({ theme }) => {
             );
         }
 
+
         // Apply status filter
         if (filterOption !== "all") {
             filtered = filtered.filter(project => {
                 const projectSelection = selectionDetails[project._id]?.studentSelection?.[0];
+                console.log(projectSelection);
                 const isCompleted = projectSelection?.isCompleted || false;
                 return filterOption === "completed" ? isCompleted : !isCompleted;
             });
         }
+
 
         setFilteredProjects(filtered);
     }, [searchQuery, projects, filterOption, selectionDetails]);

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useAuth } from "../../../../../auth/AuthContext.jsx";
 import PropTypes from "prop-types";
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
-import { User , ChevronsLeft , ChevronsRight, Search, SortDesc, SortAsc } from "lucide-react";
+import { User, ChevronsLeft, ChevronsRight, Search, SortDesc, SortAsc, CircleDashed, CheckCheck, GalleryThumbnails } from "lucide-react";
 
 const AvailableProjects = ({ theme }) => {
     const { user, isAuthLoading } = useAuth();
@@ -16,6 +16,8 @@ const AvailableProjects = ({ theme }) => {
     const [sortOption, setSortOption] = useState("newest");
     const [isProjectsLoading, setIsProjectsLoading] = useState(false);
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+    const [claimedProjects, setClaimedProjects] = useState([]);
+    const [claimFilter, setClaimFilter] = useState("not_claimed");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,7 +37,7 @@ const AvailableProjects = ({ theme }) => {
                     const projectsWithTeachers = response.data.projects;
                     const sortedProjects = projectsWithTeachers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     setProjects(sortedProjects);
-                    
+
                     // Fetch user's selected projects to filter out
                     const selectedResponse = await axios.get(
                         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/fetchUserSelectedProjects`,
@@ -45,10 +47,27 @@ const AvailableProjects = ({ theme }) => {
                             },
                         }
                     );
-                    
+
                     const selectedIds = selectedResponse.data.projectIds;
                     setSelectedProjectIds(selectedIds);
-                    
+
+                    const claimedPromises = sortedProjects.map(project =>
+                        axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/check-university`, {
+                            params: {
+                                docId: project._id,
+                                university: user.studentDetails.university
+                            }
+                        })
+                    );
+
+                    const claimedResponses = await Promise.all(claimedPromises);
+                    const claimedIds = claimedResponses
+                        .filter(response => response.data.alreadySelected)
+                        .map((_, index) => sortedProjects[index]._id);
+
+                    setClaimedProjects(claimedIds);
+
+
                     // Filter out projects where user is already a member
                     const filtered = sortedProjects.filter(project => !selectedIds.includes(project._id));
                     setFilteredProjects(filtered);
@@ -65,6 +84,13 @@ const AvailableProjects = ({ theme }) => {
 
     useEffect(() => {
         let filtered = projects.filter(project => !selectedProjectIds.includes(project._id));
+
+         // Apply claim status filter
+        if (claimFilter === "claimed") {
+            filtered = filtered.filter(project => !claimedProjects.includes(project._id));
+        } else if (claimFilter === "not_claimed") {
+            filtered = filtered.filter(project => claimedProjects.includes(project._id));
+        }
 
         // Filter by Search Query
         if (searchQuery.trim() !== "") {
@@ -86,19 +112,20 @@ const AvailableProjects = ({ theme }) => {
             filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         }
 
+
         setFilteredProjects(filtered);
-    }, [searchQuery, projects, selectedProjectIds, sortOption]);
+    }, [searchQuery, projects, selectedProjectIds, sortOption, claimFilter, claimedProjects]);
 
     const handleSortChange = (option) => {
         setSortOption(option);
         let filtered = [...filteredProjects]; // Create a copy to avoid mutating state directly
-        
+
         if (option === "newest") {
             filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         } else {
             filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         }
-        
+
         setFilteredProjects(filtered);
     };
 
@@ -195,7 +222,7 @@ const AvailableProjects = ({ theme }) => {
                 />
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between mb-6 gap-4">
                 <div className="flex items-center gap-2">
                     {sortOption === "newest" ? (
                         <SortDesc className={`${theme === "dark" ? "text-gray-400" : "text-gray-500"}`} />
@@ -211,8 +238,30 @@ const AvailableProjects = ({ theme }) => {
                         <option value="oldest">Oldest</option>
                     </select>
                 </div>
+
+                <div className="flex items-center gap-2">
+                    {
+                        claimFilter === "all" ? (
+                            <CircleDashed className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
+                        ) : claimFilter === "claimed" ? (
+                            <CheckCheck className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
+                        ) : (
+                            <GalleryThumbnails className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
+                        )
+                    }
+
+                    <select
+                        value={claimFilter}
+                        onChange={(e) => setClaimFilter(e.target.value)}
+                        className={`p-2 border rounded-lg focus:outline-none ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
+                    >
+                        <option value="all">All Projects</option>
+                        <option value="claimed">Already Claimed</option>
+                        <option value="not_claimed">Not Claimed</option>
+                    </select>
+                </div>
             </div>
-            
+
             {isProjectsLoading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loading />
@@ -221,7 +270,7 @@ const AvailableProjects = ({ theme }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentProjects.length === 0 ? (
                         <div className={`text-center col-span-full ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                            {selectedProjectIds.length > 0 
+                            {selectedProjectIds.length > 0
                                 ? "No available projects found that you haven't already joined."
                                 : "No projects found."}
                         </div>
@@ -267,11 +316,14 @@ const AvailableProjects = ({ theme }) => {
                                 </div>
 
                                 {isDurationExceeded(project.duration?.endDate) && (
-                                    <div className="absolute top-3 right-3">
-                                        <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
-                                            End Date Exceeded
-                                        </span>
-                                    </div>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
+                                        End Date Exceeded
+                                    </span>
+                                )}
+                                {!claimedProjects.includes(project._id) && (
+                                    <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}>
+                                        Already Claimed by someone else
+                                    </span>
                                 )}
                             </div>
                         ))

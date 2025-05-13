@@ -183,7 +183,7 @@ const SubmitDeliverables = () => {
     };
 
     const handleSubmitClick = () => {
-        if (selectionDetails?.isCompleted) {
+        if (selectionDetails?.status?.isCompleted) {
             setIsCompletedModalOpen(true);
         } else {
             setIsModalOpen(true);
@@ -318,33 +318,90 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
             >
                 <motion.div className="space-y-8">
                     {/* Project Status Alert */}
-                    {isProjectExpired(project.duration.endDate) && !selectionDetails?.isCompleted && (
-                        <div className={`p-4 rounded-lg flex items-center ${theme === "dark" ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>
-                            <AlertCircle className="w-6 h-6 mr-3" />
-                            <div>
-                                <h3 className="font-bold">Project Deadline Passed</h3>
-                                <p>The project end date has passed. Please contact your supervisor for further instructions.</p>
+                    {/* Project Status Alert */}
+                    <div className="space-y-4">
+                        {isProjectExpired(project.duration.endDate) && !selectionDetails?.status?.isCompleted && (
+                            <div className={`p-4 rounded-lg flex items-center ${theme === "dark" ? "bg-yellow-900 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`}>
+                                <AlertCircle className="w-6 h-6 mr-3" />
+                                <div>
+                                    <h3 className="font-bold">Project Deadline Passed</h3>
+                                    <p>The project end date has passed. Please contact your supervisor for further instructions.</p>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {selectionDetails?.isCompleted ? (
-                        <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-green-900 text-green-100" : "bg-green-100 text-green-900"}`}>
-                            <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-500 mt-1 shrink-0" />
-                            <div>
-                                <h3 className="text-base sm:text-lg font-semibold">Project Completed</h3>
-                                <p className="text-sm sm:text-base">This project has been marked as completed. No more submissions can be made.</p>
+                        {selectionDetails?.status?.isCompleted ? (
+                            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-green-900 text-green-100" : "bg-green-100 text-green-900"}`}>
+                                <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-500 mt-1 shrink-0" />
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-semibold">Project Completed</h3>
+                                    <p className="text-sm sm:text-base">This project has been marked as completed. No more submissions can be made.</p>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                ? selectionDetails.status.IndustryCompleted
+                                                    ? 'bg-blue-800 text-blue-200'
+                                                    : 'bg-gray-700 text-gray-300'
+                                                : selectionDetails.status.IndustryCompleted
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-gray-100 text-gray-600'
+                                                }`}
+                                        >
+                                            {selectionDetails.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
+                                        </span>
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                ? selectionDetails.status.TeacherCompleted
+                                                    ? 'bg-purple-800 text-purple-200'
+                                                    : 'bg-gray-700 text-gray-300'
+                                                : selectionDetails.status.TeacherCompleted
+                                                    ? 'bg-purple-100 text-purple-800'
+                                                    : 'bg-gray-100 text-gray-600'
+                                                }`}
+                                        >
+                                            {selectionDetails.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ) : !isProjectExpired(project.duration.endDate) && (
-                        <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-yellow-900 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
-                            <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500 mt-1 shrink-0" />
-                            <div>
-                                <h3 className="text-base sm:text-lg font-semibold">Project Pending</h3>
-                                <p className="text-sm sm:text-base">This project is still in progress. You can continue making submissions.</p>
+                        ) : !isProjectExpired(project.duration.endDate) && (
+                            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl shadow-md flex items-start gap-4 ${theme === "dark" ? "bg-yellow-900 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
+                                <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500 mt-1 shrink-0" />
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-semibold">Project Pending</h3>
+                                    <p className="text-sm sm:text-base">This project is still in progress. You can continue making submissions.</p>
+                                    {selectionDetails?.status && (
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <span
+                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                    ? selectionDetails.status.IndustryCompleted
+                                                        ? 'bg-blue-800 text-blue-200'
+                                                        : 'bg-gray-700 text-gray-300'
+                                                    : selectionDetails.status.IndustryCompleted
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-gray-100 text-gray-600'
+                                                    }`}
+                                            >
+                                                {selectionDetails.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending'}
+                                            </span>
+                                            <span
+                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                                    ? selectionDetails.status.TeacherCompleted
+                                                        ? 'bg-purple-800 text-purple-200'
+                                                        : 'bg-gray-700 text-gray-300'
+                                                    : selectionDetails.status.TeacherCompleted
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : 'bg-gray-100 text-gray-600'
+                                                    }`}
+                                            >
+                                                {selectionDetails.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
 
                     {/* Project Description */}
@@ -406,7 +463,7 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                             <div className="space-y-4">
                                 <p><strong>Selection ID:</strong> {selectionDetails.selectionId}</p>
                                 <p><strong>Joined At:</strong> {new Date(selectionDetails.joinedAt).toLocaleString()}</p>
-                                <p><strong>Status:</strong> {selectionDetails.isCompleted ? "Completed" : "In Progress"}</p>
+                                <p><strong>Status:</strong> {selectionDetails.status.isCompleted ? "Completed" : "In Progress"}</p>
 
                                 {/* Group Leader Section */}
                                 {selectionDetails?.groupLeader && (
@@ -498,9 +555,9 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                             <p><strong>Maximum Groups Allowed:</strong> {project.maxGroups}</p>
                             <p><strong>Belongs to Which Industry:</strong> {project.industryName}</p>
                         </div>
-                                                    <div className={`${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-900"} p-6 rounded-xl shadow-lg transition-all duration-300`}>
-                                <p><strong>Maximum Students Per Groups:</strong> {project.maxStudentsPerGroup}</p>
-                            </div>
+                        <div className={`${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-50 text-gray-900"} p-6 rounded-xl shadow-lg transition-all duration-300`}>
+                            <p><strong>Maximum Students Per Groups:</strong> {project.maxStudentsPerGroup}</p>
+                        </div>
                     </div>
 
                     {/* Required Skills */}
@@ -555,7 +612,7 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
 
             {/* Upload Files Modal - For active projects */}
             {
-                !selectionDetails?.isCompleted && (
+                !selectionDetails?.status?.isCompleted && (
                     <UploadFiles
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
