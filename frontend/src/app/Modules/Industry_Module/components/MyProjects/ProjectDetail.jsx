@@ -10,7 +10,7 @@ import ProjectEdit from "./projectEdit.jsx";
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
 import DeleteConfirmationModal from "./Modal/DeletingModal.jsx";
 import UniversityApprovalModal from "./Modal/UniversityApprovalModal.jsx"
-import { Lock, ArrowLeft, LogIn, Download, CircleX, Edit, Trash2 } from "lucide-react"
+import { Lock, ArrowLeft, LogIn, Download, CircleX, Edit, Trash2, Send } from "lucide-react"
 
 const ProjectDetail = () => {
     const { id } = useParams()
@@ -212,13 +212,15 @@ const ProjectDetail = () => {
                     {/* Project Title and Buttons Container */}
                     <div className="w-full flex flex-row items-center justify-between sm:w-10/12 sm:space-x-4">
                         {/* Edit Button (Visible on Small Screens) */}
-                        <button
-                            onClick={() => setEditing(!editing)}
-                            className={`p-3 rounded-xl sm:hidden ${theme === "dark" ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                } transition-all duration-300 transform hover:scale-110`}
-                        >
-                            {editing ? <CircleX size={24} /> : <Edit size={24} />}
-                        </button>
+                        {project.editStatus === "unlocked" && (
+                            <button
+                                onClick={() => setEditing(!editing)}
+                                className={`p-3 rounded-xl sm:hidden ${theme === "dark" ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                    } transition-all duration-300 transform hover:scale-110`}
+                            >
+                                {editing ? <CircleX size={24} /> : <Edit size={24} />}
+                            </button>
+                        )}
 
                         {/* Project Title */}
                         <div className="w-full text-center mb-6 sm:mb-0">
@@ -228,28 +230,68 @@ const ProjectDetail = () => {
                         </div>
 
                         {/* Delete Button (Visible on Small Screens) */}
-                        <button
-                            onClick={() => setdeletingConfirmModal(true)}
-                            className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110 sm:hidden"
-                        >
-                            <Trash2 size={24} />
-                        </button>
-
-                        {/* Edit and Delete Buttons (Visible on Larger Screens) */}
-                        <div className="hidden sm:flex space-x-4">
-                            <button
-                                onClick={() => setEditing(!editing)}
-                                className={`p-3 rounded-xl ${theme === "dark" ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                    } transition-all duration-300 transform hover:scale-110`}
-                            >
-                                {editing ? <CircleX size={24} /> : <Edit size={24} />}
-                            </button>
+                        {project.editStatus === "unlocked" && (
                             <button
                                 onClick={() => setdeletingConfirmModal(true)}
-                                className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110"
+                                className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110 sm:hidden"
                             >
                                 <Trash2 size={24} />
                             </button>
+                        )}
+
+                        {/* Request Buttons (Visible on Small Screens when locked) */}
+                        {project.editStatus === "locked" && (
+                            <div className="flex space-x-2 sm:hidden">
+                                <button
+                                    className={`p-2 rounded-xl ${theme === "dark" ? "bg-blue-700 text-gray-300 hover:bg-blue-600" : "bg-blue-200 text-blue-600 hover:bg-blue-300"
+                                        } transition-all duration-300 transform hover:scale-110`}
+                                >
+                                    <Send size={20} />
+                                </button>
+                                <button
+                                    className="p-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110"
+                                >
+                                    <Send size={20} />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Edit and Delete Buttons (Visible on Larger Screens) */}
+                        <div className="hidden sm:flex space-x-4">
+                            {project.editStatus === "unlocked" && (
+                                <button
+                                    onClick={() => setEditing(!editing)}
+                                    className={`p-3 rounded-xl ${theme === "dark" ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                        } transition-all duration-300 transform hover:scale-110`}
+                                >
+                                    {editing ? <CircleX size={24} /> : <Edit size={24} />}
+                                </button>
+                            )}
+                            {project.editStatus === "unlocked" && (
+                                <button
+                                    onClick={() => setdeletingConfirmModal(true)}
+                                    className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110"
+                                >
+                                    <Trash2 size={24} />
+                                </button>
+                            )}
+                            {project.editStatus === "locked" && (
+                                <>
+                                    <button
+                                        className={`p-3 rounded-xl ${theme === "dark" ? "bg-blue-700 text-gray-300 hover:bg-blue-600" : "bg-blue-200 text-blue-600 hover:bg-blue-300"
+                                            } transition-all duration-300 transform hover:scale-110 flex items-center cursor-pointer`}
+                                    >
+                                        <Send size={20} className="mr-2" />
+                                        <span>Request Edit</span>
+                                    </button>
+                                    <button
+                                        className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110 flex items-center cursor-pointer"
+                                    >
+                                        <Send size={20} className="mr-2" />
+                                        <span>Request Delete</span>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -7,9 +7,10 @@ import ProfileSetting from "./components/ProfileSettings/AdminProfileSetting.jsx
 import navBarLogo from "../../../assets/images/fyp-connect-favicon.png";
 import Loading from "../../Components/loadingIndicator/loading.jsx";
 import PrivacyPolicyUpdate from "./components/PrivacyPolicyUpdate/PrivacyPolicyUpdate.jsx";
-import { Sun, Moon, LayoutDashboard, UserCog, Settings, FileText, X, Menu, LogOut, UserCircle2, Bot } from "lucide-react";
+import { Sun, Moon, LayoutDashboard, UserCog, Settings, FileText, X, Menu, LogOut, UserCircle2, Bot, Vault, SquareChartGantt } from "lucide-react";
 import UserManagement from "./components/UserManagement/UserManagement.jsx";
 import Chatbot from "../AI_Module/Chatbot_v2.jsx";
+import AllCompletedProjectCards from "./components/Success-stories-update/ProjectCards.jsx"
 
 
 const AdminDashboard = () => {
@@ -28,15 +29,15 @@ const AdminDashboard = () => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
 
-     useEffect(() => {
-            const handleResize = () => {
-                setWindowWidth(window.innerWidth);
-            };
-    
-            window.addEventListener('resize', handleResize);
-            return () => window.removeEventListener('resize', handleResize);
-        }, []);
-    
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
 
 
     useEffect(() => {
@@ -78,6 +79,8 @@ const AdminDashboard = () => {
     const menuItems = [
         { label: "Overview", icon: <LayoutDashboard />, key: "Overview" },
         { label: "UserManage", icon: <UserCog />, key: "User Management" },
+        { label: "Project Management", icon: <SquareChartGantt />, key: "Project Management" },
+        { label: "Success Stories", icon: <Vault />, key: "Success Stories" },
         { label: "Update Policy", icon: <FileText />, key: "Update Privacy Policy" },
         { label: "Profile", icon: <Settings />, key: "Profile Settings" },
     ];
@@ -142,6 +145,14 @@ const AdminDashboard = () => {
             case 'User Management':
                 return <UserManagement theme={theme} />;
 
+            case "Project Management":
+                return <Overview theme={theme} />;
+
+
+            case "Success Stories":
+                return <AllCompletedProjectCards theme={theme} />;
+
+
             case "Update Privacy Policy":
                 return <PrivacyPolicyUpdate theme={theme} />;
 
@@ -153,7 +164,7 @@ const AdminDashboard = () => {
         }
     };
 
- if (isAuthLoading || isLoading) {
+    if (isAuthLoading || isLoading) {
         return <Loading />;
     }
 
@@ -349,7 +360,7 @@ const AdminDashboard = () => {
                     </motion.main>
                 </div>
             </motion.div>
-            
+
             {isChatOpen && (
                 <motion.div
                     className={`fixed ${isMobile ? 'inset-0' : 'right-0 top-0 h-full'} z-40`}

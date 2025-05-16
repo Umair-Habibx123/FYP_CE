@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import { 
-  Lightbulb, 
-  ClipboardCheck, 
-  Search, 
-  Users, 
-  MessageSquare, 
-  Award 
+import {
+    Lightbulb,
+    ClipboardCheck,
+    Search,
+    Users,
+    MessageSquare,
+    Award
 } from 'lucide-react';
- import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import image1 from "../../../../../assets/images/seven.webp";
 import image2 from "../../../../../assets/images/eight.webp";
 import image3 from "../../../../../assets/images/nine.webp";
@@ -81,13 +81,16 @@ const HowItWorks = () => {
                             Collaborative Edge revolutionizes the Final Year Project experience by creating a seamless collaboration platform for students, educators, and industry professionals.
                         </p>
                     </div>
-                    <div className="border-2 border-gray-300 bg-gradient-to-br from-gray-50 to-white p-8 rounded-2xl shadow-sm">
-                        <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
-                            Simplifying Project Submission and Approval
-                        </h2>
-                        <p className="text-gray-600">
-                            We make it easy for industry professionals to submit ideas and for educators to review them, ensuring students access high-quality, relevant projects that prepare them for real-world challenges.
-                        </p>
+                    <div className="relative">
+                        <div className="bg-gradient-to-br from-indigo-50 to-white p-8 rounded-3xl shadow-sm border border-gray-100 relative z-10">
+                            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
+                                Simplifying Project Submission and Approval
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                We make it easy for industry professionals to submit ideas and for educators to review them, ensuring students access high-quality, relevant projects that prepare them for real-world challenges.
+                            </p>
+                        </div>
+                        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-indigo-100 rounded-2xl -z-0"></div>
                     </div>
                 </motion.div>
             </div>
@@ -124,8 +127,8 @@ const HowItWorks = () => {
                                 className="border-2 border-gray-300 cursor-pointer bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
                             >
                                 <div className="relative h-48 overflow-hidden">
-                                    <img 
-                                        src={card.image} 
+                                    <img
+                                        src={card.image}
                                         alt={card.title}
                                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                     />
@@ -139,9 +142,9 @@ const HowItWorks = () => {
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">{card.title}</h3>
                                     <p className="text-gray-600 mb-4">{card.description}</p>
                                     <button className="cursor-pointer text-gray-600 font-medium hover:text-gray-700 transition-colors">
-                                    <Link to="/project-ideas">
-                                        Learn more →
-                                    </Link>
+                                        <Link to="/project-ideas">
+                                            Learn more →
+                                        </Link>
                                     </button>
                                 </div>
                             </motion.div>
@@ -182,8 +185,8 @@ const HowItWorks = () => {
                                 className="border-2 border-gray-300 cursor-pointer group relative overflow-hidden rounded-xl bg-white shadow-md"
                             >
                                 <div className="relative h-48 overflow-hidden">
-                                    <img 
-                                        src={card.image} 
+                                    <img
+                                        src={card.image}
                                         alt={card.title}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />

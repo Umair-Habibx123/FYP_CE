@@ -4,97 +4,61 @@ import axios from "axios";
 import { useAuth } from "../../../../../auth/AuthContext.jsx";
 import PropTypes from "prop-types";
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
-import { User, ChevronsLeft, ChevronsRight, Search, SortDesc, SortAsc, CircleDashed, CheckCheck, GalleryThumbnails } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Search, SortAsc, SortDesc } from "lucide-react";
 
-const AvailableProjects = ({ theme }) => {
+const AllCompletedProjectCards = ({ theme }) => {
     const { user, isAuthLoading } = useAuth();
+    const [isProjectsLoading, setIsProjectsLoading] = useState(false);
     const [projects, setProjects] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(12);
-    const [searchQuery, setSearchQuery] = useState("");
     const [filteredProjects, setFilteredProjects] = useState([]);
     const [sortOption, setSortOption] = useState("newest");
-    const [isProjectsLoading, setIsProjectsLoading] = useState(false);
-    const [selectedProjectIds, setSelectedProjectIds] = useState([]);
-    const [claimedProjects, setClaimedProjects] = useState([]);
-    const [claimFilter, setClaimFilter] = useState("not_claimed");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(12);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchProjects = async () => {
-            if (user && user.studentDetails && user.studentDetails.university) {
-                setIsProjectsLoading(true);
-                try {
-                    const response = await axios.get(
-                        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/fetchProjectsWithTeachers`,
-                        {
-                            params: {
-                                university: user.studentDetails.university,
-                            },
-                        }
-                    );
-
-                    const projectsWithTeachers = response.data.projects;
-                    const sortedProjects = projectsWithTeachers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    setProjects(sortedProjects);
-
-                    // Fetch user's selected projects to filter out
-                    const selectedResponse = await axios.get(
-                        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/fetchUserSelectedProjects`,
-                        {
-                            params: {
-                                userId: user.email,
-                            },
-                        }
-                    );
-
-                    const selectedIds = selectedResponse.data.projectIds;
-                    setSelectedProjectIds(selectedIds);
-
-                    const claimedPromises = sortedProjects.map(project =>
-                        axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/check-university`, {
-                            params: {
-                                docId: project._id,
-                                university: user.studentDetails.university
-                            }
-                        })
-                    );
-
-                    const claimedResponses = await Promise.all(claimedPromises);
-                    const claimedIds = claimedResponses
-                        .filter(response => response.data.alreadySelected)
-                        .map((_, index) => sortedProjects[index]._id);
-
-                    setClaimedProjects(claimedIds);
-
-
-                    // Filter out projects where user is already a member
-                    const filtered = sortedProjects.filter(project => !selectedIds.includes(project._id));
-                    setFilteredProjects(filtered);
-                } catch (error) {
-                    console.error("Error fetching projects:", error);
-                } finally {
-                    setIsProjectsLoading(false);
-                }
+        const fetchUserAndProjects = async () => {
+            if (user?.email) {
+                fetchMyProjects(user.email);
             }
         };
-
-        fetchProjects();
+        if (user) {
+            fetchUserAndProjects();
+        }
     }, [user]);
 
-    useEffect(() => {
-        let filtered = projects.filter(project => !selectedProjectIds.includes(project._id));
+    const fetchMyProjects = async (currentUserId) => {
+        setIsProjectsLoading(true); // Set loading state to true
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getCompletedProjects`);
+            const sortedProjects = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setProjects(sortedProjects);
+            setFilteredProjects(sortedProjects);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+        } finally {
+            setIsProjectsLoading(false); // Set loading state to false
+        }
+    };
 
-        // Apply claim status filter
-        if (claimFilter === "claimed") {
-            filtered = filtered.filter(project => claimedProjects.includes(project._id));
-        } else if (claimFilter === "not_claimed") {
-            filtered = filtered.filter(project => !claimedProjects.includes(project._id));
+    useEffect(() => {
+        setStatusFilter("all");
+    }, []);
+
+    useEffect(() => {
+        let filtered = projects;
+
+        // Filter by Status
+        if (statusFilter !== "all") {
+            filtered = filtered.filter(project => project.status === statusFilter);
         }
 
-        // Filter by Search Query
+        // Filter by Search Query on Multiple Tags
         if (searchQuery.trim() !== "") {
             const query = searchQuery.toLowerCase();
+
             filtered = filtered.filter(project =>
                 project.title.toLowerCase().includes(query) ||
                 project.description.toLowerCase().includes(query) ||
@@ -105,20 +69,13 @@ const AvailableProjects = ({ theme }) => {
             );
         }
 
-        // Apply sorting
-        if (sortOption === "newest") {
-            filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } else {
-            filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        }
-
-
         setFilteredProjects(filtered);
-    }, [searchQuery, projects, selectedProjectIds, sortOption, claimFilter, claimedProjects]);
+    }, [searchQuery, statusFilter, projects]);
 
     const handleSortChange = (option) => {
         setSortOption(option);
-        let filtered = [...filteredProjects]; // Create a copy to avoid mutating state directly
+
+        let filtered = statusFilter === "all" ? [...projects] : projects.filter(p => p.status === statusFilter);
 
         if (option === "newest") {
             filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -140,20 +97,13 @@ const AvailableProjects = ({ theme }) => {
     const indexOfFirstProject = indexOfLastProject - itemsPerPage;
     const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
 
-    if (!user) {
-        return (
-            <div className={`text-center ${theme === "dark" ? "text-red-400" : "text-red-500"}`}>
-                You must be logged in to view your projects.
-            </div>
-        );
-    }
-
     const Pagination = () => {
         const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-        const maxVisiblePages = 3;
+        const maxVisiblePages = 3; // How many numbers you want to show at once
 
         const generatePageNumbers = () => {
             if (totalPages <= maxVisiblePages + 4) {
+                // Show all pages if total pages are small
                 return Array.from({ length: totalPages }, (_, i) => i + 1);
             }
 
@@ -206,9 +156,17 @@ const AvailableProjects = ({ theme }) => {
         return <Loading />;
     }
 
+    if (!user) {
+        return (
+            <div className={`text-center ${theme === "dark" ? "text-red-400" : "text-red-500"}`}>
+                You must be logged in to view your projects.
+            </div>
+        );
+    }
+
     return (
         <div className={`p-6 ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-lg`}>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Available Projects For Students</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">All Completed Projects</h2>
 
             {/* Search Bar */}
             <div className={`mb-8 flex items-center border ${theme === "dark" ? "border-gray-700" : "border-gray-300"} rounded-lg p-2 shadow-sm`}>
@@ -222,7 +180,8 @@ const AvailableProjects = ({ theme }) => {
                 />
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between mb-6 gap-4">
+            {/* Filters and Sorting */}
+            <div className="flex flex-col sm:flex-row justify-start mb-6 gap-4">
                 <div className="flex items-center gap-2">
                     {sortOption === "newest" ? (
                         <SortDesc className={`${theme === "dark" ? "text-gray-400" : "text-gray-500"}`} />
@@ -238,30 +197,9 @@ const AvailableProjects = ({ theme }) => {
                         <option value="oldest">Oldest</option>
                     </select>
                 </div>
-
-                <div className="flex items-center gap-2">
-                    {
-                        claimFilter === "all" ? (
-                            <CircleDashed className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
-                        ) : claimFilter === "claimed" ? (
-                            <CheckCheck className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
-                        ) : (
-                            <GalleryThumbnails className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
-                        )
-                    }
-
-                    <select
-                        value={claimFilter}
-                        onChange={(e) => setClaimFilter(e.target.value)}
-                        className={`p-2 border rounded-lg focus:outline-none ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
-                    >
-                        <option value="all">All Projects</option>
-                        <option value="claimed">Claimed Projects</option>
-                        <option value="not_claimed">Unclaimed Projects</option>
-                    </select>
-                </div>
             </div>
 
+            {/* Project List */}
             {isProjectsLoading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loading />
@@ -269,17 +207,13 @@ const AvailableProjects = ({ theme }) => {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentProjects.length === 0 ? (
-                        <div className={`text-center col-span-full ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                            {selectedProjectIds.length > 0
-                                ? "No available projects found that you haven't already joined."
-                                : "No projects found."}
-                        </div>
+                        <div className={`text-center col-span-full ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>No projects found.</div>
                     ) : (
                         currentProjects.map((project) => (
                             <div
                                 key={project._id}
                                 className={`rounded-lg shadow-lg p-4 border cursor-pointer hover:shadow-xl transition-transform transform hover:scale-105 h-full flex flex-col ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
-                                onClick={() => navigate(`/project-selection/${project._id}`)}
+                                onClick={() => navigate(`/project/${project._id}`)}
                             >
                                 <div className="flex justify-between items-center">
                                     <h3 className="font-semibold text-lg">{project.title}</h3>
@@ -296,34 +230,15 @@ const AvailableProjects = ({ theme }) => {
                                     <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                                         <strong>Industry:</strong> {project.industryName}
                                     </p>
-
-                                    {project.teacherDetails && (
-                                        <div className="flex items-center">
-                                            {project.teacherDetails.profilePic ? (
-                                                <img
-                                                    src={project.teacherDetails.profilePic}
-                                                    alt={project.teacherDetails.username}
-                                                    className="w-8 h-8 rounded-full mr-2"
-                                                />
-                                            ) : (
-                                                <User className="w-8 h-8 text-gray-400 bg-gray-200 p-1 rounded-full mr-2" />
-                                            )}
-                                            <span className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                                                {project.teacherDetails.username}
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
 
+                                {/* Add the exceeded tag */}
                                 {isDurationExceeded(project.duration?.endDate) && (
-                                    <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
-                                        End Date Exceeded
-                                    </span>
-                                )}
-                                {claimedProjects.includes(project._id) && (
-                                    <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}>
-                                        Already Claimed by someone else
-                                    </span>
+                                    <div className="absolute bottom-3 right-3">
+                                        <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
+                                            End Date Exceeded
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         ))
@@ -331,13 +246,14 @@ const AvailableProjects = ({ theme }) => {
                 </div>
             )}
 
+            {/* Pagination */}
             <Pagination />
         </div>
     );
 };
 
-AvailableProjects.propTypes = {
+AllCompletedProjectCards.propTypes = {
     theme: PropTypes.string.isRequired,
 };
 
-export default AvailableProjects;
+export default AllCompletedProjectCards;

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { UserCircle2, Edit, LoaderCircle, Save , CheckCircle, Edit2, CircleX } from "lucide-react";
+import { UserCircle2, Edit, LoaderCircle, Save, CheckCircle, Edit2, CircleX } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { motion } from "framer-motion";
 import Loading from "../../../../Components/loadingIndicator/loading";
+import bcrypt from 'bcryptjs';
 
 const ProfileSetting = ({ theme }) => {
     const [user, setUser] = useState(null);
@@ -21,6 +22,7 @@ const ProfileSetting = ({ theme }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [isHashing, setIsHashing] = useState(false);
     const navigate = useNavigate();
 
 
@@ -69,6 +71,7 @@ const ProfileSetting = ({ theme }) => {
         setFormData({ ...formData, [editingField]: e.target.value });
     };
 
+
     const handleSave = async () => {
         if (editingField === "username" && !usernameRegex.test(formData.username)) {
             setErrorMessage("Invalid username. It should be 3-16 characters long and can contain letters, numbers, underscores, and hyphens.");
@@ -84,15 +87,24 @@ const ProfileSetting = ({ theme }) => {
 
         setIsSaving(true);
         try {
-            // Optimistic update
-            const updatedUser = { ...user, [editingField]: formData[editingField] };
+            let valueToUpdate = formData[editingField];
+
+            if (editingField === "password") {
+                setIsHashing(true);
+                const hashedPassword = await bcrypt.hash(formData.password, 10);
+                valueToUpdate = hashedPassword;
+                setIsHashing(false);
+            }
+
+            // Optimistic update (don't show hashed password in UI)
+            const updatedUser = { ...user, [editingField]: editingField === "password" ? "********" : formData[editingField] };
             setUser(updatedUser);
 
             const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/updateProfile`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ [editingField]: formData[editingField] })
+                body: JSON.stringify({ [editingField]: valueToUpdate })
             });
 
             if (!response.ok) throw new Error("Failed to update profile");
@@ -106,6 +118,7 @@ const ProfileSetting = ({ theme }) => {
             console.error("Update error:", error);
         } finally {
             setIsSaving(false);
+            setIsHashing(false);
         }
     };
 

@@ -6,22 +6,6 @@ by panel of teachers, it will get listed for the final semester students looking
 project status can be managed with the portal. Where teachers and industry representatives can view current status of the project.
 
 
-creation cammands:
-
-// backend
- - > mkdir CollaborativeEdge && cd CollaborativeEdge
- - > mkdir ce-backend && cd ce-backend
- - > npm init -y
- - > npm install express cors dotenv mongoose
- - > npm install --save-dev nodemon
- - > package.json = add "type": "module",
- - > caan rename to ce-backend to any, like backend
-
-//frontend
- - > npm create vite@latest collaborative-edge -- --template react
-
-
-
 1. Users Collection (General)
 
 {
@@ -138,6 +122,26 @@ creation cammands:
       "uploadedAt": "2025-01-20T12:00:00.000Z"
     },
   ],
+  "editStatus": "locked", // Enum: ["locked", "unlocked"]
+  "pendingRequests": ["req123456"],
+  "editHistory": [
+    {
+      "changeId": "chg123",
+      "requestId": "req123456",
+      "changedBy": "industry@gmail.com",
+      "changedAt": "2025-03-02T10:00:00.000Z",
+      "fieldsChanged": ["description", "duration"],
+      "oldValues": {
+        "description": "Old description...",
+        "duration": {"endDate": "2025-06-30"}
+      },
+      "newValues": {
+        "description": "Updated description...",
+        "duration": {"endDate": "2025-07-15"}
+      },
+      "approvedBy": "admin1@university.edu"
+    }
+  ],
   "createdAt": "2025-01-20T11:16:39.345Z",
   "updatedAt": "2025-01-22T11:30:00.345Z"
 }
@@ -211,6 +215,19 @@ creation cammands:
         "isCompleted": true
       },
       "completedAt" :  "2025-01-22T10:30:00.000Z",
+    }
+  ],
+   "pendingChangeRequests": ["req789012"],
+  "changeHistory": [
+    {
+      "changeId": "chg124",
+      "requestId": "req789012",
+      "changeType": "memberRemoval",
+      "removedMember": "person3@university.edu",
+      "reason": "Not contributing to project",
+      "changedBy": "Dr. hammad",
+      "changedAt": "2025-03-03T11:00:00.000Z",
+      "approvedBy": "admin1@university.edu"
     }
   ],
 }
@@ -287,3 +304,269 @@ Stores reviews for groups...
   "averageRating": 4.75, // (Optional) Calculated field based on all reviews
   "totalReviews": 2 // Number of reviews for quick access
 }
+
+
+// The admin becomes a gatekeeper rather than an implementer, which is more scalable for large institutions
+// No direct access to project data, No need for complex edit interfaces, Only decision-making responsibility
+// Better Accountability :- Original requester implements changes (they know the context)
+
+
+11. Requests Collection (Centralized)
+
+{
+  "_id": "req123456",
+  "type": "projectEdit", // Enum: ["projectEdit", "projectDelete", "supervisorChange", 
+                        // "groupMemberChange", "userBlockRequest", "projectExtension"]
+  "status": "pending", // Enum: ["pending", "approved", "rejected", "moreInfoNeeded"]
+  "requestedBy": {
+    "userId": "industry@gmail.com",
+    "role": "industry",
+    "name": "Tech Solutions"
+  },
+  "projectId": "proj123", // Required for project-related requests
+  "selectionId": "group_sel_001", // Required for group-related requests
+  "currentData": {
+    // Snapshot of current state (system-generated)
+  },
+  "requestedChanges": {
+    // User's proposed changes
+  },
+  "reason": "Need to update requirements based on new regulations",
+  "adminComments": "", // Filled when admin responds
+  "createdAt": "2025-03-01T10:00:00.000Z",
+  "updatedAt": "2025-03-01T10:00:00.000Z",
+  "processedAt": null,
+  "processedBy": null
+}
+
+
+12. Request History Collection (For Audit)
+
+{
+  "_id": "hist123",
+  "requestId": "req123456",
+  "action": "statusChange", // Enum: ["created", "commentAdded" , "statusChange]
+  "changedBy": "admin1@university.edu",
+  "fromStatus": "pending",
+  "toStatus": "approved",
+  "comments": "Changes look reasonable",
+  "actionAt": "2025-03-02T09:30:00.000Z"
+}
+
+
+13. Change Implementation Scripts
+
+{
+  "_id": "projects.updateProjectFields",
+  "description": "Updates specific project fields",
+  "scriptType": "projectEdit",
+  "validationSchema": {
+    "type": "object",
+    "properties": {
+      "title": {"type": "string", "maxLength": 100},
+      "description": {"type": "string"},
+      "duration": {
+        "type": "object",
+        "properties": {
+          "startDate": {"type": "string", "format": "date"},
+          "endDate": {"type": "string", "format": "date"}
+        }
+      }
+    }
+  },
+  "implementation": `
+    async function execute(requestId, projectId, changes) {
+      const project = await db.projects.findOne({_id: projectId});
+      if (!project) throw new Error('Project not found');
+      
+      // Apply changes
+      const update = {};
+      for (const [field, value] of Object.entries(changes)) {
+        update[field] = value;
+      }
+      
+      await db.projects.updateOne(
+        {_id: projectId},
+        {$set: update, $push: {editHistory: {
+          changeId: new ObjectId(),
+          requestId: requestId,
+          changedBy: this.requestedBy.userId,
+          changedAt: new Date(),
+          fieldsChanged: Object.keys(changes),
+          approvedBy: this.processedBy
+        }}}
+      );
+      
+      return {success: true};
+    }
+  `,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-01T00:00:00.000Z"
+}
+
+
+
+
+
+// examples.. project edit
+// Example request document
+{
+  "_id": "req123456",
+  "type": "projectEdit",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "industry@gmail.com",
+    "role": "industry",
+    "name": "Tech Solutions"
+  },
+  "projectId": "proj123",
+  "currentData": {
+    "title": "AI-based Facial Recognition",
+    "description": "Current description...",
+    "duration": {
+      "startDate": "2025-02-01",
+      "endDate": "2025-06-30"
+    }
+  },
+  "requestedChanges": {
+    "description": "Updated description with new requirements...",
+    "duration": {
+      "endDate": "2025-07-15"
+    }
+  },
+  "changeHash": "a1b2c3d4e5f6", // Cryptographic hash of requestedChanges
+  "implementationScript": "projects.updateProjectFields",
+  "reason": "New government regulations require additional features",
+  "adminComments": "",
+  "createdAt": "2025-03-01T10:00:00.000Z",
+  "updatedAt": "2025-03-01T10:00:00.000Z",
+  "processedAt": null,
+  "processedBy": null
+}
+
+
+// project delete
+
+{
+  "_id": "req789012",
+  "type": "projectDelete",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "industry@gmail.com",
+    "role": "industry",
+    "name": "Tech Solutions"
+  },
+  "projectId": "proj123",
+  "currentData": {
+    "title": "AI-based Facial Recognition",
+    "status": "approved",
+    "hasActiveGroups": true
+  },
+  "reason": "Company has changed strategic direction",
+  "createdAt": "2025-03-02T11:00:00.000Z"
+}
+
+
+// supervisor changed
+{
+  "_id": "req345678",
+  "type": "supervisorChange",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "industry@gmail.com",
+    "role": "industry",
+    "name": "Tech Solutions"
+  },
+  "projectId": "proj123",
+  "currentData": {
+    "currentSupervisor": {
+      "teacherId": "teacher1@university.edu",
+      "name": "Dr. Sarah Khan"
+    }
+  },
+  "requestedChanges": {
+    "newSupervisor": {
+      "teacherId": "teacher2@university.edu",
+      "name": "Dr. Ali Ahmed"
+    },
+    "changeReasonType": "changeUniversity" // or "changeWithinUniversity"
+  },
+  "reason": "Current supervisor is moving to another institution",
+  "createdAt": "2025-03-03T09:00:00.000Z"
+}
+
+
+// Group Member Change Request
+
+
+{
+  "_id": "req456789",
+  "type": "groupMemberChange",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "numl-f21-40813@numls.edu.pk",
+    "role": "student",
+    "name": "Umair Habib"
+  },
+  "projectId": "proj123",
+  "selectionId": "group_sel_001",
+  "currentData": {
+    "currentMembers": ["Dr. hammad", "person2", "person3"]
+  },
+  "requestedChanges": {
+    "action": "remove", // or "add"
+    "memberEmail": "person3@university.edu",
+    "replacementEmail": null // Only for replacement
+  },
+  "reason": "Member has not attended meetings or contributed work",
+  "createdAt": "2025-03-04T14:00:00.000Z"
+}
+
+
+// Project Extension Request
+
+{
+  "_id": "req678901",
+  "type": "projectExtension",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "teacher1@university.edu",
+    "role": "teacher",
+    "name": "Dr. Sarah Khan"
+  },
+  "projectId": "proj123",
+  "currentData": {
+    "currentEndDate": "2025-06-30",
+    "selectionId": "group_sel_001",
+    "progressStatus": "75% completed"
+  },
+  "requestedChanges": {
+    "newEndDate": "2025-07-15",
+    "extensionReasonType": "technicalDifficulties" // or "scopeChange", "personalIssues"
+  },
+  "reason": "Unexpected technical challenges with the facial recognition API",
+  "createdAt": "2025-03-06T11:00:00.000Z"
+}
+
+
+
+
+
+creation cammands:
+
+// backend
+ - > mkdir CollaborativeEdge && cd CollaborativeEdge
+ - > mkdir ce-backend && cd ce-backend
+ - > npm init -y
+ - > npm install express cors dotenv mongoose
+ - > npm install --save-dev nodemon
+ - > package.json = add "type": "module",
+ - > caan rename to ce-backend to any, like backend
+
+//frontend
+ - > npm create vite@latest collaborative-edge -- --template react
+
+
+
+
+123456,789012,345678,901234,567890,123456,789012,345678,901234,567890,123456,789012 .... 

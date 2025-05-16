@@ -14,6 +14,7 @@ import privacyPolicyRoutes from "./routes/privacyPolicyRoutes.js";
 import AdminRoutes from "./routes/adminRoutes.js";
 import EmailRoutes from "./routes/emailRoutes.js";
 import GrisFsRoutes from "./routes/gridFsRoutes.js";
+import notificationsRoutes from "./routes/notificationRoutes.js"
 import { getUsersByYear, getUsersByMonth, getUsersByWeek, getUsersByRole, getProjectsByType, getProjectsByIndustry, getProjectsByRepresentative, } from "./controllers/adminGraphController.js";
 import {
     getProjectsBySkills,
@@ -35,6 +36,7 @@ import TeacherSupervision from "./routes/teacherSupervisionRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import StudentSubmission from "./routes/studentSubmissionRoutes.js";
+import authMiddleware from './middleware/authMiddleware.js';
 const { json: _json } = bodyParser;
 dotenv.config();
 
@@ -59,6 +61,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
@@ -81,11 +84,15 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "index2.html"));
 });
 
+
+// app.use(authMiddleware);
+
 app.use("/api", userRoutes);
 app.use("/api", industryRoutes);
 app.use("/api", teacherRoutes);
 app.use("/api", studentRoutes);
-app.use("/api", projectsRoutes);
+app.use("/api",  projectsRoutes);
+// app.use("/api",  authMiddleware, projectsRoutes);
 app.use("/api", TeacherApproval);
 app.use("/api", TeacherSupervision);
 app.use("/api", StudentSelection);
@@ -95,6 +102,7 @@ app.use("/api", privacyPolicyRoutes);
 app.use("/admin", AdminRoutes);
 app.use("/", EmailRoutes);
 app.use("/", GrisFsRoutes);
+app.use("/api" , notificationsRoutes);
 
 
 // admin graphs

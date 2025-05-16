@@ -8,6 +8,8 @@ import EditIndustryModal from "./Modal/EditIndModal";
 import DeleteConfirmationModal from "./Modal/DeletingModal";
 import AddIndustryModal from "./Modal/AddNewModal";
 import { Building, Calendar1, CircleCheck, CircleX, Clock, Edit, Eye, Globe, Loader2Icon, Mail, Phone, PlusCircle, Save, Trash2, User2, UserCircle2 } from "lucide-react"
+import bcrypt from 'bcryptjs';
+
 
 const ProfileSetting = ({ theme }) => {
     const [user, setUser] = useState(null);
@@ -32,6 +34,9 @@ const ProfileSetting = ({ theme }) => {
     const [errors, setErrors] = useState({});
     const [deletingModalOpen, setIsDeletingModalOpen] = useState(false);
     const [deletingFile, setDeletingFile] = useState(null); // State for tracking file deletion
+    const [isHashing, setIsHashing] = useState(false);
+
+
 
     const addNewIndustry = () => {
         setIndustries([...industries, {
@@ -428,6 +433,15 @@ const ProfileSetting = ({ theme }) => {
 
         setIsSaving(true);
         try {
+            let valueToUpdate = formData[editingField];
+
+            if (editingField === "password") {
+                setIsHashing(true);
+                const hashedPassword = await bcrypt.hash(formData.password, 10);
+                valueToUpdate = hashedPassword;
+                setIsHashing(false);
+            }
+
             // Optimistic update
             const updatedUser = { ...user, [editingField]: formData[editingField] };
             setUser(updatedUser);
@@ -436,7 +450,7 @@ const ProfileSetting = ({ theme }) => {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ [editingField]: formData[editingField] })
+                body: JSON.stringify({ [editingField]: valueToUpdate })
             });
 
             if (!response.ok) throw new Error("Failed to update profile");

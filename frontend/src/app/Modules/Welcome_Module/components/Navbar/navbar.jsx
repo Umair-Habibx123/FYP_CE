@@ -143,7 +143,7 @@ const Navbar = () => {
                             ) : user.profilePic ? (
                                 <img src={user.profilePic} alt="Profile" className="h-10 w-10 rounded-full border-2 border-white" />
                             ) : (
-                                <UserCircle2 className="h-10 w-10 text-gray-400 rounded-full border-2 border-white" />
+                                <UserCircle2 className="h-10 w-10 text-white rounded-full" />
                             )}
                             <AnimatePresence>
                                 {dropdownOpen && (

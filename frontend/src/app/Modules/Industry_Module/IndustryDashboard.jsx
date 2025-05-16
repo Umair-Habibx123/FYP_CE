@@ -6,13 +6,14 @@ import MyProjects from "./components/MyProjects/MyProjectCards.jsx";
 import ProfileSetting from "./components/ProfileSettings/IndustryProfileSetting.jsx";
 import { useAuth } from "../../../auth/AuthContext.jsx";
 import navBarLogo from "../../../assets/images/fyp-connect-favicon.png";
-import { LogOut, Sun, Moon, LayoutDashboard, FolderCheck, Upload, Settings, UserCheck, TrendingUp, ShieldCheck, Menu, X, UserCircle2, Bot } from "lucide-react";
+import { LogOut, Sun, Moon, LayoutDashboard, FolderCheck, Upload, Settings, UserCheck, TrendingUp, ShieldCheck, Menu, X, UserCircle2, Bot, Bell, BellDot, BellIcon } from "lucide-react";
 import Loading from "../../Components/loadingIndicator/loading.jsx";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy.jsx";
 import StudentProgress from "./components/StudentProgress/ProjectCards.jsx";
 import TeacherSupervision from "./components/TeacherSupervision/ProjectCards.jsx";
 import Chatbot from "../AI_Module/Chatbot_v2.jsx"
 import Overview from "./components/overview/overview.jsx";
+import NotificationScreen from "./components/NotificationScreen.jsx";
 
 const IndustryDashboard = () => {
     // const [selectedOption, setSelectedOption] = useState(
@@ -21,13 +22,37 @@ const IndustryDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
     const [showOptions, setShowOptions] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const { user, isAuthLoading } = useAuth();
     const themeDropdownRef = useRef(null);
+    const notificationDropdownRef = useRef(null);
     const navigate = useNavigate();
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const sidebarControls = useAnimation();
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [showNotificationScreen, setShowNotificationScreen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+
+    const fetchUnreadCount = async () => {
+        if (!user?.email) return;
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
+                { credentials: "include" }
+            );
+            const data = await response.json();
+            if (data.success) setUnreadCount(data.count);
+        } catch (error) {
+            console.error("Error fetching unread count:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCount();
+    }, [user?.email]);
+
 
     useEffect(() => {
         const handleResize = () => {
@@ -42,7 +67,7 @@ const IndustryDashboard = () => {
     useEffect(() => {
         // Combined effect for both mouse move and click outside handling
         const handleMouseMove = (e) => {
-            if (e.clientX < 5) {
+            if (e.clientX < 5 && !showNotificationScreen) {  // Added condition here
                 setIsSidebarOpen(true);
                 sidebarControls.start({ x: 0 });
             }
@@ -56,6 +81,8 @@ const IndustryDashboard = () => {
                 }
             }
         };
+
+
 
         // Set loading to false when all event listeners are set up
         const setupListeners = () => {
@@ -71,7 +98,8 @@ const IndustryDashboard = () => {
 
         const cleanup = setupListeners();
         return cleanup;
-    }, [sidebarControls]); // Only sidebarControls as dependency
+    }, [sidebarControls, showNotificationScreen]);  // Added showNotificationScreen to dependencies
+
 
     const TopMenuItems = [
         { label: "Overview", icon: <LayoutDashboard />, key: "Overview" },
@@ -137,6 +165,24 @@ const IndustryDashboard = () => {
             console.error("Logout failed:", error);
         }
     };
+
+
+    // Handle click outside for notifications dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target)) {
+                const notificationButton = document.querySelector('.notification-button');
+                if (!notificationButton || !notificationButton.contains(event.target)) {
+                    setShowNotifications(false);
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
 
 
@@ -213,94 +259,134 @@ const IndustryDashboard = () => {
                         </div>
 
                         <div className="flex items-center space-x-2 sm:space-x-4 px-1">
-                            <button
-                                className={`relative cursor-pointer h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isChatOpen ? 'bg-purple-600' : 'bg-gradient-to-r from-blue-500 to-purple-600'}`}
-                                onClick={() => setIsChatOpen(!isChatOpen)}
-                                style={{
-                                    boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.3)',
-                                }}
-                            >
-                                <Bot size={20} className="text-white" />
-                                <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-red-500 text-white text-[10px] sm:text-xs flex items-center justify-center animate-pulse">
-                                    <span className="inline-block">AI</span>
-                                </span>
-                            </button>
+                            {/* Notification Button */}
+                            <div className="relative" ref={notificationDropdownRef}>
+                                {/* Notification Button */}
+                                <div className="relative" ref={notificationDropdownRef}>
+                                    <button
+                                        onClick={() => {
+                                            setShowNotificationScreen(true);
+                                            setIsSidebarOpen(false);
+                                            // Reset unread count when opening notifications
+                                            // setUnreadCount(0);
+                                        }}
+                                        className={`cursor-pointer relative p-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg ${theme === "dark"
+                                                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                                                : "bg-white hover:bg-gray-100 text-gray-800"
+                                            }`}
+                                    >
+                                        {unreadCount > 0 ? (
+                                            <BellDot className="w-5 h-5" />
+                                        ) : (
+                                            <Bell className="w-5 h-5" />
+                                        )}
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center animate-pulse">
+                                                {unreadCount > 9 ? "9+" : unreadCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
 
-                            <div className="relative" ref={themeDropdownRef}>
+                                {showNotificationScreen && (
+                                    <NotificationScreen
+                                        theme={theme}
+                                        onClose={() => setShowNotificationScreen(false)}
+                                    />
+                                )}
+
+                            </div>
+
+                            <div className="flex items-center space-x-2 sm:space-x-4 px-1">
                                 <button
-                                    onClick={() => setShowOptions(!showOptions)}
-                                    className="cursor-pointer p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-md theme-button"
+                                    className={`relative cursor-pointer h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isChatOpen ? 'bg-purple-600' : 'bg-gradient-to-r from-blue-500 to-purple-600'}`}
+                                    onClick={() => setIsChatOpen(!isChatOpen)}
+                                    style={{
+                                        boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.3)',
+                                    }}
                                 >
-                                    {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
+                                    <Bot size={20} className="text-white" />
+                                    <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-red-500 text-white text-[10px] sm:text-xs flex items-center justify-center animate-pulse">
+                                        <span className="inline-block">AI</span>
+                                    </span>
                                 </button>
 
-                                {showOptions && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.2 }}
-                                        className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg ring-1 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}
+                                <div className="relative" ref={themeDropdownRef}>
+                                    <button
+                                        onClick={() => setShowOptions(!showOptions)}
+                                        className="cursor-pointer p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-md theme-button"
                                     >
-                                        <div className="py-1">
-                                            <button
-                                                onClick={() => toggleTheme("light")}
-                                                className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
-                                            >
-                                                Light
-                                            </button>
-                                            <button
-                                                onClick={() => toggleTheme("dark")}
-                                                className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
-                                            >
-                                                Dark
-                                            </button>
-                                            <button
-                                                onClick={() => toggleTheme("system")}
-                                                className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
-                                            >
-                                                System
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </div>
+                                        {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
+                                    </button>
 
-                            <div
-                                className="flex items-center space-x-2 cursor-pointer group"
-                                onClick={() => {
-                                    setSelectedOption("Profile Settings");
-                                    setIsSidebarOpen(false);
-                                }}
-                            >
-                                <p className={`hidden sm:inline-flex text-sm font-semibold ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-                                    {user ? user.username : "Guest"}
-                                </p>
-                                {user?.profilePic ? (
-                                    <img
-                                        src={user?.profilePic}
-                                        alt="Profile"
-                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 shadow-md group-hover:border-purple-500 transition-all ${theme === "dark" ? "border-gray-800" : "border-white"} `}
-                                    />
-                                ) : (
-                                    <UserCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400 rounded-full border-2 border-white group-hover:border-purple-500 transition-all" />
-                                )}
-                            </div>
-                            <button
-                                onClick={logout}
-                                className={`cursor-pointer hidden sm:flex items-center gap-2 p-2 rounded-lg transition duration-200 ${theme === "dark" ? "text-red-400 hover:bg-gray-700" : "text-red-600 hover:bg-gray-100"}`}
-                                title="Logout"
-                            >
-                                <LogOut className="w-5 h-5" />
-                                <span className="text-sm font-medium">Logout</span>
-                            </button>
+                                    {showOptions && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg ring-1 ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}
+                                        >
+                                            <div className="py-1">
+                                                <button
+                                                    onClick={() => toggleTheme("light")}
+                                                    className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
+                                                >
+                                                    Light
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleTheme("dark")}
+                                                    className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
+                                                >
+                                                    Dark
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleTheme("system")}
+                                                    className={`cursor-pointer block w-full px-4 py-2 text-sm ${theme === "dark" ? "text-gray-200 hover:bg-gray-700" : "hover:bg-gray-100 text-gray-700"}`}
+                                                >
+                                                    System
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
 
-                            <button
-                                onClick={logout}
-                                className={`cursor-pointer sm:hidden p-2 rounded-full ${theme === "dark" ? "text-red-400 hover:bg-gray-700" : "text-red-600 hover:bg-gray-100"}`}
-                                title="Logout"
-                            >
-                                <LogOut className="w-5 h-5" />
-                            </button>
+                                <div
+                                    className="flex items-center space-x-2 cursor-pointer group"
+                                    onClick={() => {
+                                        setSelectedOption("Profile Settings");
+                                        setIsSidebarOpen(false);
+                                    }}
+                                >
+                                    <p className={`hidden sm:inline-flex text-sm font-semibold ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                                        {user ? user.username : "Guest"}
+                                    </p>
+                                    {user?.profilePic ? (
+                                        <img
+                                            src={user?.profilePic}
+                                            alt="Profile"
+                                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 shadow-md group-hover:border-purple-500 transition-all ${theme === "dark" ? "border-gray-800" : "border-white"} `}
+                                        />
+                                    ) : (
+                                        <UserCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400 rounded-full border-2 border-white group-hover:border-purple-500 transition-all" />
+                                    )}
+                                </div>
+                                <button
+                                    onClick={logout}
+                                    className={`cursor-pointer hidden sm:flex items-center gap-2 p-2 rounded-lg transition duration-200 ${theme === "dark" ? "text-red-400 hover:bg-gray-700" : "text-red-600 hover:bg-gray-100"}`}
+                                    title="Logout"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                    <span className="text-sm font-medium">Logout</span>
+                                </button>
+
+                                <button
+                                    onClick={logout}
+                                    className={`cursor-pointer sm:hidden p-2 rounded-full ${theme === "dark" ? "text-red-400 hover:bg-gray-700" : "text-red-600 hover:bg-gray-100"}`}
+                                    title="Logout"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </motion.nav>

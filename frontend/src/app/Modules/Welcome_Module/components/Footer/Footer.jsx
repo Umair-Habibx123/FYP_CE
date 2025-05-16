@@ -22,9 +22,9 @@ const Footer = () => {
     const quickLinks = ["About Us", "How It Works", "Project Ideas", "Success Stories"];
     const resources = ["Privacy Policy", "Terms and Conditions", "Contact Us"];
     const contactInfo = [
-        { icon: <MapPin size={18} />, text: "123 Street, Islamabad, Pakistan" , url : "" },
-        { icon: <Mail size={18} />, text: "collaborateedgeofficials@gmail.com" , url: "mailto:collaborateedgeofficials@gmail.com" },
-        { icon: <Phone size={18} />, text: "+92 (234) 567-1234" , url: "tel:+922345671234" }
+        { icon: <MapPin size={18} />, text: "123 Street, Islamabad, Pakistan", url: "" },
+        { icon: <Mail size={18} />, text: "collaborateedgeofficials@gmail.com", url: "mailto:collaborateedgeofficials@gmail.com" },
+        { icon: <Phone size={18} />, text: "+92 (234) 567-1234", url: "tel:+922345671234" }
     ];
 
     return (
@@ -40,14 +40,14 @@ const Footer = () => {
                         transition={{ duration: 0.8, staggerChildren: 0.2 }}
                     >
                         {/* Brand Section */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col items-center md:items-start"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
                         >
                             <Link to="/" className="flex items-center mb-6 group">
-                                <motion.h2 
+                                <motion.h2
                                     className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
                                     whileHover={{ scale: 1.02 }}
                                 >
@@ -82,7 +82,7 @@ const Footer = () => {
                         </motion.div>
 
                         {/* Quick Links */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col items-center md:items-start"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -112,7 +112,7 @@ const Footer = () => {
                         </motion.div>
 
                         {/* Contact Info */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col items-center md:items-start"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -146,7 +146,7 @@ const Footer = () => {
                         </motion.div>
 
                         {/* Resources */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col items-center md:items-start"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -178,7 +178,7 @@ const Footer = () => {
                 </div>
 
                 {/* Divider */}
-                <motion.div 
+                <motion.div
                     className="relative my-8 mx-4"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -206,11 +206,11 @@ const Footer = () => {
                     <p className="text-gray-500 text-sm mb-4 md:mb-0 text-center md:text-left">
                         &copy; {new Date().getFullYear()} Collaborate Edge. All rights reserved.
                     </p>
-                    
+
 
                     {/* Developer Card */}
                     <motion.div
-                        className="mt-4 md:mt-0 md:absolute md:right-4 md:bottom-0 w-full md:w-auto"
+                        className="mt-4 md:mt-0 md:absolute md:right-4 md:bottom-6 w-full md:w-auto"
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}

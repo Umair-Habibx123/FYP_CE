@@ -5,6 +5,7 @@ import TeacherSupervision from "../models/TeacherSupervision.js";
 import Project from "../models/Projects.js";
 import User from "../models/User.js";
 import Teacher from "../models/Teachers.js";
+import { sendSupervisionRequestNotification, sendSupervisionResponseNotification } from "../routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -18,7 +19,6 @@ router.use((req, res, next) => {
 
 
 
-
 router.post("/insertTeacherSupervisionRequest", async (req, res) => {
     try {
         console.log("Incoming request body:", req.body);
@@ -29,11 +29,9 @@ router.post("/insertTeacherSupervisionRequest", async (req, res) => {
             return res.status(400).json({ error: "Invalid or missing required fields." });
         }
 
-
         let existingSupervision = await TeacherSupervision.findOne({ _id });
 
         if (existingSupervision) {
-
             const existingTeacher = existingSupervision.supervisedBy.find(
                 (teacher) => teacher.teacherId === teacherId
             );
@@ -41,7 +39,6 @@ router.post("/insertTeacherSupervisionRequest", async (req, res) => {
             if (existingTeacher) {
                 return res.status(400).json({ error: "Teacher has already submitted a response for this project." });
             }
-
 
             existingSupervision.supervisedBy.push({
                 teacherId,
@@ -57,12 +54,20 @@ router.post("/insertTeacherSupervisionRequest", async (req, res) => {
             });
 
             await existingSupervision.save();
+            
+            // Send notification to project representative
+            await sendSupervisionRequestNotification(_id, {
+                teacherId,
+                fullName,
+                university,
+                email
+            });
+
             return res.status(200).json({
                 message: "Teacher supervision added successfully.",
                 supervision: { teacherId, fullName, university, email }
             });
         } else {
-
             const newSupervision = new TeacherSupervision({
                 _id,
                 supervisedBy: [
@@ -82,6 +87,15 @@ router.post("/insertTeacherSupervisionRequest", async (req, res) => {
             });
 
             await newSupervision.save();
+            
+            // Send notification to project representative
+            await sendSupervisionRequestNotification(_id, {
+                teacherId,
+                fullName,
+                university,
+                email
+            });
+
             return res.status(201).json({
                 message: "Teacher supervision request submitted successfully.",
                 supervision: { _id, teacherId, fullName, university, email }
@@ -92,7 +106,6 @@ router.post("/insertTeacherSupervisionRequest", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-
 
 
 router.get('/getSupervisions', async (req, res) => {
@@ -109,11 +122,15 @@ router.get('/getSupervisions', async (req, res) => {
 });
 
 
-
-
 router.post('/updateSupervisionStatus', async (req, res) => {
     try {
         const { projectId, teacherId, status, actionBy, comments } = req.body;
+        
+        // Validate input
+        if (!projectId || !teacherId || !status || !actionBy) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
         const supervision = await TeacherSupervision.findOne({ _id: projectId });
         if (!supervision) {
             return res.status(404).json({ message: 'Supervision not found' });
@@ -124,14 +141,31 @@ router.post('/updateSupervisionStatus', async (req, res) => {
             return res.status(404).json({ message: 'Teacher supervision not found' });
         }
 
+        // Update supervision status
         teacherSupervision.responseFromInd.status = status;
         teacherSupervision.responseFromInd.comments = comments;
         teacherSupervision.responseFromInd.actionBy = actionBy;
         teacherSupervision.responseFromInd.actionedAt = new Date();
 
         await supervision.save();
-        res.json({ message: 'Supervision status updated successfully' });
+
+        // Send notification to the teacher about the response
+        if (status === 'approved' || status === 'rejected') {
+            await sendSupervisionResponseNotification(
+                projectId,
+                teacherId,
+                status,
+                actionBy,
+                comments
+            );
+        }
+
+        res.json({ 
+            message: 'Supervision status updated successfully',
+            status: status
+        });
     } catch (error) {
+        console.error('Error updating supervision status:', error);
         res.status(500).json({ message: 'Error updating supervision status', error });
     }
 });

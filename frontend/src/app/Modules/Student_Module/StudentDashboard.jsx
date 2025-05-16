@@ -9,10 +9,11 @@ import SelectedProjects2 from "./components/SubmitDeliverables/SelectedProjectCa
 import SelectedProjects3 from "./components/FeedbackRemarks/SelectedProjectCards.jsx";
 import { useAuth } from "../../../auth/AuthContext.jsx";
 import navBarLogo from "../../../assets/images/fyp-connect-favicon.png";
-import { LogOut, Sun, Moon, LayoutDashboard, FileSearch, ClipboardList, Settings, MessagesSquare, Upload, ShieldCheck, Menu, X, UserCircle2, Bot } from "lucide-react";
+import { LogOut, Sun, Moon, LayoutDashboard, FileSearch, ClipboardList, Settings, MessagesSquare, Upload, ShieldCheck, Menu, X, UserCircle2, Bot, BellIcon } from "lucide-react";
 import StudentPrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy.jsx"
 import Loading from "../../Components/loadingIndicator/loading.jsx";
 import Chatbot from "../AI_Module/Chatbot_v2.jsx"
+import NotificationScreen from "../Industry_Module/components/NotificationScreen.jsx";
 
 
 const StudentDashboard = () => {
@@ -29,6 +30,30 @@ const StudentDashboard = () => {
     const sidebarControls = useAnimation();
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showNotificationScreen, setShowNotificationScreen] = useState(false);
+    const notificationDropdownRef = useRef(null);
+    const [showNotifications, setShowNotifications] = useState(false);
+        const [unreadCount, setUnreadCount] = useState(0);
+    
+
+
+     const fetchUnreadCount = async () => {
+            if (!user?.email) return;
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
+                    { credentials: "include" }
+                );
+                const data = await response.json();
+                if (data.success) setUnreadCount(data.count);
+            } catch (error) {
+                console.error("Error fetching unread count:", error);
+            }
+        };
+    
+        useEffect(() => {
+            fetchUnreadCount();
+        }, [user?.email]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -43,7 +68,7 @@ const StudentDashboard = () => {
     useEffect(() => {
         // Combined effect for both mouse move and click outside handling
         const handleMouseMove = (e) => {
-            if (e.clientX < 5) {
+            if (e.clientX < 5 && !showNotificationScreen) {  // Added condition here
                 setIsSidebarOpen(true);
                 sidebarControls.start({ x: 0 });
             }
@@ -72,8 +97,7 @@ const StudentDashboard = () => {
 
         const cleanup = setupListeners();
         return cleanup;
-    }, [sidebarControls]); // Only sidebarControls as dependency
-
+    }, [sidebarControls, showNotificationScreen]);  // Added showNotificationScreen to dependencies
 
 
 
@@ -143,6 +167,23 @@ const StudentDashboard = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [selectedOption]);
+
+     // Handle click outside for notifications dropdown
+        useEffect(() => {
+            const handleClickOutside = (event) => {
+                if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target)) {
+                    const notificationButton = document.querySelector('.notification-button');
+                    if (!notificationButton || !notificationButton.contains(event.target)) {
+                        setShowNotifications(false);
+                    }
+                }
+            };
+    
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, []);
 
 
     const renderContent = () => {
@@ -221,6 +262,40 @@ const StudentDashboard = () => {
                         </div>
 
                         <div className="flex items-center space-x-2 sm:space-x-4 px-1">
+                             <div className="relative" ref={notificationDropdownRef}>
+                                  <button
+                                        onClick={() => {
+                                            setShowNotificationScreen(true);
+                                            setIsSidebarOpen(false);
+                                            // Reset unread count when opening notifications
+                                            // setUnreadCount(0);
+                                        }}
+                                        className={`cursor-pointer relative p-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg ${theme === "dark"
+                                                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                                                : "bg-white hover:bg-gray-100 text-gray-800"
+                                            }`}
+                                    >
+                                        {unreadCount > 0 ? (
+                                            <BellDot className="w-5 h-5" />
+                                        ) : (
+                                            <BellIcon className="w-5 h-5" />
+                                        )}
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center animate-pulse">
+                                                {unreadCount > 9 ? "9+" : unreadCount}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                {showNotificationScreen && (
+                                    <NotificationScreen
+                                        theme={theme}
+                                        onClose={() => setShowNotificationScreen(false)}
+                                    />
+                                )}
+
+                            </div>
+                            
                             <button
                                 className={`relative cursor-pointer h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isChatOpen ? 'bg-purple-600' : 'bg-gradient-to-r from-blue-500 to-purple-600'}`}
                                 onClick={() => setIsChatOpen(!isChatOpen)}

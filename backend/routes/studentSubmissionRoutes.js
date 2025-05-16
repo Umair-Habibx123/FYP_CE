@@ -1,6 +1,7 @@
 import { Router } from "express";
 import cookieParser from "cookie-parser";
 import StudentSubmission from "../models/StudentSubmission.js";
+import {  sendSubmissionNotification  } from "../routes/notificationRoutes.js"
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -13,24 +14,19 @@ router.use((req, res, next) => {
     next();
 });
 
-
 router.post("/addSubmission", async (req, res) => {
     try {
         const { projectId, selectionId, submittedById, submittedByName, comments, files } = req.body;
-
 
         if (!projectId || !selectionId || !submittedById || !submittedByName || !comments) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-
         const _id = `${projectId}-${selectionId}`;
-
-        console.log()
-
+        const submissionId = `sub_${Date.now()}`;
 
         const newSubmission = {
-            submissionId: `sub_${Date.now()}`,
+            submissionId,
             submittedById,
             submittedByName,
             comments,
@@ -38,11 +34,9 @@ router.post("/addSubmission", async (req, res) => {
             submittedAt: new Date(),
         };
 
-
         let submissionDoc = await StudentSubmission.findOne({ _id });
 
         if (!submissionDoc) {
-
             submissionDoc = new StudentSubmission({
                 _id,
                 projectId,
@@ -52,22 +46,33 @@ router.post("/addSubmission", async (req, res) => {
                 lastSubmittedAt: new Date(),
             });
         } else {
-
             submissionDoc.submissions.push(newSubmission);
             submissionDoc.totalSubmissions += 1;
             submissionDoc.lastSubmittedAt = new Date();
         }
 
-
         await submissionDoc.save();
 
-        res.status(201).json({ message: "Submission added successfully", submission: newSubmission });
+        // Send notification to:
+        // - Project representative
+        // - Approved supervisors
+        // - Group leader (if different from submitter)
+        await sendSubmissionNotification(
+            projectId,
+            selectionId,
+            submittedByName,
+            submissionId
+        );
+
+        res.status(201).json({ 
+            message: "Submission added successfully", 
+            submission: newSubmission 
+        });
     } catch (error) {
         console.error("Error adding submission:", error);
         res.status(500).json({ error: "Failed to add submission" });
     }
 });
-
 
 router.get('/fetchSubmissionsBySelectionId/:selectionId', async (req, res) => {
     try {

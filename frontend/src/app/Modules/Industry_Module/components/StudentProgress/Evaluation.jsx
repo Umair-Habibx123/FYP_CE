@@ -128,30 +128,30 @@ const Evaluation = () => {
     };
 
     const handleMarkAsCompleted = async (markAsComplete) => {
-            try {
-                setIsMarkingComplete(true);
-                const value = markAsComplete;
-                await axios.put(
-                    `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/MarkAsCompleted/${projectId}/${selectionId}/${user.role}/${value}`
-                );
-                toast.success(`Project marked as ${markAsComplete ? 'completed' : 'incomplete'} successfully!`);
-    
-                setCompletionStatus(prev => ({
-                    ...prev,
-                    status: {
-                        ...prev.status,
-                        [user.role === "teacher" ? "TeacherCompleted" : "IndustryCompleted"]: markAsComplete,
-                        isCompleted: markAsComplete
-                    },
-                    completedAt: markAsComplete ? new Date().toISOString() : null
-                }));
-    
-            } catch (err) {
-                toast.error(err.response?.data?.message || `Failed to mark project as ${markAsComplete ? 'completed' : 'incomplete'}`);
-            } finally {
-                setIsMarkingComplete(false);
-            }
-        };
+        try {
+            setIsMarkingComplete(true);
+            const value = markAsComplete;
+            await axios.put(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/MarkAsCompleted/${projectId}/${selectionId}/${user.role}/${value}`
+            );
+            toast.success(`Project marked as ${markAsComplete ? 'completed' : 'incomplete'} successfully!`);
+
+            setCompletionStatus(prev => ({
+                ...prev,
+                status: {
+                    ...prev.status,
+                    [user.role === "teacher" ? "TeacherCompleted" : "IndustryCompleted"]: markAsComplete,
+                    isCompleted: markAsComplete
+                },
+                completedAt: markAsComplete ? new Date().toISOString() : null
+            }));
+
+        } catch (err) {
+            toast.error(err.response?.data?.message || `Failed to mark project as ${markAsComplete ? 'completed' : 'incomplete'}`);
+        } finally {
+            setIsMarkingComplete(false);
+        }
+    };
 
     const handleEvaluateAll = () => {
         if (submissions.submissions.length > 0) {
@@ -289,7 +289,7 @@ const Evaluation = () => {
     }
 
     return (
-       <div className={`-mt-[70px] md:-mt-[90px] min-h-screen p-4 md:p-8 ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+        <div className={`-mt-[70px] md:-mt-[90px] min-h-screen p-4 md:p-8 ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
             <ToastContainer />
             <div className="max-w-6xl mx-auto">
 
@@ -306,7 +306,7 @@ const Evaluation = () => {
                 </div>
 
                 {/* Header Section */}
-                 <div className="mb-8">
+                <div className="mb-8">
                     <div className="flex flex-col gap-6 mb-8">
                         {/* Header section */}
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -314,411 +314,417 @@ const Evaluation = () => {
                                 <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                                     Project Submissions
                                 </h1>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <FolderGit className="h-4 w-4 mr-2 text-blue-500" />
-                                    Project: <span className="ml-1 font-mono">{projectId}</span>
-                                </span>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <Users2 className="h-4 w-4 mr-2 text-purple-500" />
-                                    Group: <span className="ml-1 font-mono">{selectionId}</span>
-                                </span>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                                    <Clock className="h-4 w-4 mr-2 text-amber-500" />
-                                    Last: <span className="ml-1">{new Date(submissions.lastSubmittedAt).toLocaleDateString()}</span>
-                                 </span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <FolderGit className="h-4 w-4 mr-2 text-blue-500" />
+                                        Project: <span className="ml-1 font-mono">{projectId}</span>
+                                    </span>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <Users2 className="h-4 w-4 mr-2 text-purple-500" />
+                                        Group: <span className="ml-1 font-mono">{selectionId}</span>
+                                    </span>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+                                        <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                                        Last: <span className="ml-1">{new Date(submissions.lastSubmittedAt).toLocaleDateString()}</span>
+                                    </span>
                                 </div>
                             </div>
 
 
-                        <div className="flex items-center gap-2">
-                            <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
-                                    ? completionStatus.status.IndustryCompleted
-                                        ? 'bg-blue-800 text-blue-200'
-                                        : 'bg-gray-700 text-gray-300'
-                                    : completionStatus.status.IndustryCompleted
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : 'bg-gray-100 text-gray-600'
-                                    }`}
-                            >
-                                {completionStatus.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending !?'}
-                            </span>
-                            <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
-                                    ? completionStatus.status.TeacherCompleted
-                                        ? 'bg-purple-800 text-purple-200'
-                                        : 'bg-gray-700 text-gray-300'
-                                    : completionStatus.status.TeacherCompleted
-                                        ? 'bg-purple-100 text-purple-800'
-                                        : 'bg-gray-100 text-gray-600'
-                                    }`}
-                            >
-                                {completionStatus.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending !?'}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Action buttons - now in a single row with consistent spacing */}
-                    <div className="flex flex-col sm:flex-row gap-3 w-full">
-                        <div className="flex flex-1 gap-3">
-                            {user.role === "industry" && (
-                                <button
-                                    onClick={handleEvaluateAll}
-                                    className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                                          ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-md'
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                        ? completionStatus.status.IndustryCompleted
+                                            ? 'bg-blue-800 text-blue-200'
+                                            : 'bg-gray-700 text-gray-300'
+                                        : completionStatus.status.IndustryCompleted
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : 'bg-gray-100 text-gray-600'
                                         }`}
                                 >
-                                    {userIndustryReview ? (
-                                        <>
-                                            <PenSquare className="h-5 w-5" />
-                                            <span className="whitespace-nowrap">Edit Industry Review</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <GraduationCap className="h-5 w-5" />
-                                            <span className="whitespace-nowrap">Add Industry Review</span>
-                                        </>
-                                    )}
-                                </button>
-                            )}
-
-                            {user.role === "teacher" && (
-                                <button
-                                    onClick={handleEvaluateAll}
-                                    className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                  ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
+                                    {completionStatus.status.IndustryCompleted ? 'Industry ✓' : 'Industry Pending !?'}
+                                </span>
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
+                                        ? completionStatus.status.TeacherCompleted
+                                            ? 'bg-purple-800 text-purple-200'
+                                            : 'bg-gray-700 text-gray-300'
+                                        : completionStatus.status.TeacherCompleted
+                                            ? 'bg-purple-100 text-purple-800'
+                                            : 'bg-gray-100 text-gray-600'
                                         }`}
                                 >
-                                    {userIndustryReview ? (
-                                        <>
-                                            <PenSquare className="h-5 w-5" />
-                                            <span className="whitespace-nowrap">Edit Industry Review</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <HardHat className="h-5 w-5" />
-                                            <span className="whitespace-nowrap">Add Industry Review</span>
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                                    {completionStatus.status.TeacherCompleted ? 'Teacher ✓' : 'Teacher Pending !?'}
+                                </span>
+                            </div>
                         </div>
 
-                        <div className="flex-1">
-                            {completionStatus.status.IndustryCompleted ? (
-                                <button
-                                    onClick={() => handleMarkAsCompleted(false)}
-                                    disabled={isMarkingComplete}
-                                    className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                  ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {isMarkingComplete ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <XCircle className="h-5 w-5" />
-                                    )}
-                                    <span className="whitespace-nowrap">Mark as Incomplete</span>
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleMarkAsCompleted(true)}
-                                    disabled={isMarkingComplete}
-                                    className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                  ${theme === 'dark'
-                                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-md'
-                                        }`}
-                                >
-                                    {isMarkingComplete ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <CheckCircle2 className="h-5 w-5" />
-                                    )}
-                                    <span className="whitespace-nowrap">Mark as Complete</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-
-                {/* Reviews Section */}
-                {(hasTeacherReview || hasIndustryReview) && (
-                    <div className={`mb-6 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                        <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold flex items-center">
-                                <BadgeCheck className="h-5 w-5 mr-3 text-green-500" />
-                                Project Reviews
-                            </h3>
-                        </div>
-
-                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {/* Teacher Reviews */}
-                            {hasTeacherReview && (
-                                <div className="p-5">
-                                    <div className="flex items-center mb-4">
-                                        <GraduationCap className="h-6 w-6 mr-3 text-blue-500" />
-                                        <h4 className="text-lg font-semibold">Teacher Reviews</h4>
-                                    </div>
-                                    <div className="space-y-4 pl-9">
-                                        {reviews
-                                            .filter(review => review.reviewerRole === "teacher")
-                                            .map((review, index) => (
-                                                <div key={index} className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h5 className="font-medium">{review.fullName}</h5>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {new Date(review.reviewedAt).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex items-center">
-                                                            <Star className="h-5 w-5 text-amber-500 mr-1" />
-                                                            <span className="font-bold">{review.rating * 20}/100</span>
-                                                        </div>
-                                                    </div>
-                                                    <p className="mt-2">{review.comments}</p>
-                                                    {review.reviewerId === user.email && (
-                                                        <button
-                                                            onClick={handleEvaluateAll}
-                                                            className={`mt-3 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
-                                                                        ${theme === 'dark'
-                                                                    ? 'bg-blue-900/50 hover:bg-blue-800 text-blue-300'
-                                                                    : 'bg-blue-100 hover:bg-blue-200 text-blue-600'
-                                                                }`}
-                                                        >
-                                                            <PenSquare className="h-4 w-4" />
-                                                            Edit Review
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Industry Reviews */}
-                            {hasIndustryReview && (
-                                <div className="p-5">
-                                    <div className="flex items-center mb-4">
-                                        <HardHat className="h-6 w-6 mr-3 text-amber-500" />
-                                        <h4 className="text-lg font-semibold">Industry Reviews</h4>
-                                    </div>
-                                    <div className="space-y-4 pl-9">
-                                        {reviews
-                                            .filter(review => review.reviewerRole === "industry")
-                                            .map((review, index) => (
-                                                <div key={index} className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h5 className="font-medium">{review.fullName}</h5>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {new Date(review.reviewedAt).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex items-center">
-                                                            <Star className="h-5 w-5 text-amber-500 mr-1" />
-                                                            <span className="font-bold">{review.rating * 20}/100</span>
-                                                        </div>
-                                                    </div>
-                                                    <p className="mt-2">{review.comments}</p>
-                                                    {review.reviewerId === user.email && (
-                                                        <button
-                                                            onClick={handleEvaluateAll}
-                                                            className={`mt-3 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
-                                                                        ${theme === 'dark'
-                                                                    ? 'bg-amber-900/50 hover:bg-amber-800 text-amber-300'
-                                                                    : 'bg-amber-100 hover:bg-amber-200 text-amber-600'
-                                                                }`}
-                                                        >
-                                                            <PenSquare className="h-4 w-4" />
-                                                            Edit Review
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Submission Timeline */}
-            <div className={`rounded-xl overflow-hidden transition-all ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg border border-gray-200'}`}>
-                <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                        <h2 className="flex items-center text-xl font-semibold">
-                            <History className="h-5 w-5 mr-3 text-blue-500" />
-                            Submission Timeline
-                        </h2>
-                        <span className={`text-sm px-3 py-1.5 rounded-full font-medium ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                            <span className="font-bold">{submissions.totalSubmissions}</span> submission{submissions.totalSubmissions !== 1 ? 's' : ''}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {submissions.submissions.map((submission, index) => (
-                        <div
-                            key={submission.submissionId}
-                            className={`transition-all duration-200 ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-50'}`}
-                            onMouseEnter={() => setHoveredSubmission(submission.submissionId)}
-                            onMouseLeave={() => setHoveredSubmission(null)}
-                        >
-                            <div
-                                className={`flex items-center justify-between p-5 cursor-pointer ${expandedSubmissions.includes(submission.submissionId) ?
-                                    theme === 'dark' ? 'bg-gray-800/30' : 'bg-gray-50' : ''}`}
-                                onClick={() => toggleSubmission(submission.submissionId)}
-                            >
-                                <div className="flex items-center">
-                                    <div className="relative mr-4">
-                                        <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} ${hoveredSubmission === submission.submissionId ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}>
-                                            <User className="h-6 w-6 text-gray-500" />
-                                        </div>
-                                        {index === 0 && (
-                                            <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                                                <span className="text-white text-xs font-bold">✓</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center">
-                                            <h3 className="font-semibold text-lg mr-3">{submission.submittedByName}</h3>
-                                            {index === 0 && (
-                                                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700'}`}>
-                                                    Latest
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
-                                            <CalendarDays className="h-4 w-4 mr-2" />
-                                            {new Date(submission.submittedAt).toLocaleString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
+                        {/* Action buttons - now in a single row with consistent spacing */}
+                        <div className="flex flex-col sm:flex-row gap-3 w-full">
+                            <div className="flex flex-1 gap-3">
+                                {user.role === "industry" && (
                                     <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEvaluate(submission);
-                                        }}
-                                        className={`px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2
-                                                    ${theme === 'dark'
-                                                ? 'bg-blue-900/50 hover:bg-blue-800 text-blue-300 shadow'
-                                                : 'bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm'
+                                        onClick={handleEvaluateAll}
+                                        className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                                          ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-md'
                                             }`}
                                     >
-                                        {user.role === "teacher" ? (
-                                            <GraduationCap className="h-4 w-4" />
+                                        {userIndustryReview ? (
+                                            <>
+                                                <PenSquare className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Edit Industry Review</span>
+                                            </>
                                         ) : (
-                                            <HardHat className="h-4 w-4" />
+                                            <>
+                                                <GraduationCap className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Add Industry Review</span>
+                                            </>
                                         )}
-                                        {user.role === "teacher" ? "Teacher Review" : "Industry Review"}
                                     </button>
-                                    {expandedSubmissions.includes(submission.submissionId) ? (
-                                        <ChevronUp className="h-5 w-5 text-gray-500 transition-transform" />
-                                    ) : (
-                                        <ChevronDown className="h-5 w-5 text-gray-500 transition-transform" />
-                                    )}
-                                </div>
+                                )}
+
+                                {user.role === "teacher" && (
+                                    <button
+                                        onClick={handleEvaluateAll}
+                                        className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {userIndustryReview ? (
+                                            <>
+                                                <PenSquare className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Edit Industry Review</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <HardHat className="h-5 w-5" />
+                                                <span className="whitespace-nowrap">Add Industry Review</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
 
-                            {expandedSubmissions.includes(submission.submissionId) && (
-                                <div className={`p-5 pt-0 transition-all duration-300 ${theme === 'dark' ? 'bg-gray-800/20' : 'bg-gray-50'}`}>
-                                    <div className="pl-16">
-                                        {/* Comments Section */}
-                                        {submission.comments && (
-                                            <div className={`mb-5 p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
-                                                <div className="flex items-start">
-                                                    <MessageSquareMore className="h-5 w-5 mt-0.5 mr-3 flex-shrink-0 text-gray-500" />
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-600 dark:text-gray-300 mb-1">Comments</h4>
-                                                        <p className="text-sm">{submission.comments}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                            <div className="flex-1">
+                                {completionStatus.status.IndustryCompleted ? (
+                                    <button
+                                        onClick={() => handleMarkAsCompleted(false)}
+                                        disabled={isMarkingComplete || completionStatus.status.isCompleted === true}
+                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all gap-2
+    ${theme === 'dark'
+                                                ? 'text-white shadow-lg'
+                                                : 'text-white shadow-md'}
+    ${isMarkingComplete || completionStatus.status.isCompleted
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : theme === 'dark'
+                                                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 hover:shadow-lg'
+                                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 hover:shadow-md'
+                                            }`}
+                                    >
+                                        {isMarkingComplete ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <XCircle className="h-5 w-5" />
                                         )}
+                                        <span className="whitespace-nowrap">Mark as Incomplete</span>
+                                    </button>
 
-                                        {/* Files Section */}
-                                        <div className="mb-1">
-                                            <h4 className="font-medium mb-3 flex items-center text-gray-600 dark:text-gray-300">
-                                                <FolderOpen className="h-5 w-5 mr-3 text-gray-500" />
-                                                Submitted Files
-                                            </h4>
-                                            <div className="space-y-2 pl-1">
-                                                {submission.files?.map((file, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className={`flex items-center justify-between p-3 rounded-lg ${theme === 'dark' ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100'}`}
-                                                    >
-                                                        <div className="flex items-center min-w-0">
-                                                            <File className="h-5 w-5 mr-3 flex-shrink-0 text-gray-500" />
-                                                            <span className="truncate text-sm font-medium">{file.fileName}</span>
+                                ) : (
+                                    <button
+                                        onClick={() => handleMarkAsCompleted(true)}
+                                        disabled={isMarkingComplete}
+                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
+                  ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg'
+                                                : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-md'
+                                            }`}
+                                    >
+                                        {isMarkingComplete ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 className="h-5 w-5" />
+                                        )}
+                                        <span className="whitespace-nowrap">Mark as Complete</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {/* Reviews Section */}
+                    {(hasTeacherReview || hasIndustryReview) && (
+                        <div className={`mb-6 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                            <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+                                <h3 className="text-xl font-semibold flex items-center">
+                                    <BadgeCheck className="h-5 w-5 mr-3 text-green-500" />
+                                    Project Reviews
+                                </h3>
+                            </div>
+
+                            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {/* Teacher Reviews */}
+                                {hasTeacherReview && (
+                                    <div className="p-5">
+                                        <div className="flex items-center mb-4">
+                                            <GraduationCap className="h-6 w-6 mr-3 text-blue-500" />
+                                            <h4 className="text-lg font-semibold">Teacher Reviews</h4>
+                                        </div>
+                                        <div className="space-y-4 pl-9">
+                                            {reviews
+                                                .filter(review => review.reviewerRole === "teacher")
+                                                .map((review, index) => (
+                                                    <div key={index} className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <h5 className="font-medium">{review.fullName}</h5>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {new Date(review.reviewedAt).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <Star className="h-5 w-5 text-amber-500 mr-1" />
+                                                                <span className="font-bold">{review.rating * 20}/100</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                                {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                            <a
-                                                                href={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${file.fileUrl}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className={`p-2 rounded-lg transition-all ${theme === 'dark'
-                                                                    ? 'text-blue-400 hover:bg-gray-700'
-                                                                    : 'text-blue-600 hover:bg-gray-200'
+                                                        <p className="mt-2">{review.comments}</p>
+                                                        {review.reviewerId === user.email && (
+                                                            <button
+                                                                onClick={handleEvaluateAll}
+                                                                className={`mt-3 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
+                                                                        ${theme === 'dark'
+                                                                        ? 'bg-blue-900/50 hover:bg-blue-800 text-blue-300'
+                                                                        : 'bg-blue-100 hover:bg-blue-200 text-blue-600'
                                                                     }`}
-                                                                title="Download"
-                                                                onClick={(e) => e.stopPropagation()}
                                                             >
-                                                                <DownloadCloud className="h-5 w-5" />
-                                                            </a>
-                                                        </div>
+                                                                <PenSquare className="h-4 w-4" />
+                                                                Edit Review
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Industry Reviews */}
+                                {hasIndustryReview && (
+                                    <div className="p-5">
+                                        <div className="flex items-center mb-4">
+                                            <HardHat className="h-6 w-6 mr-3 text-amber-500" />
+                                            <h4 className="text-lg font-semibold">Industry Reviews</h4>
+                                        </div>
+                                        <div className="space-y-4 pl-9">
+                                            {reviews
+                                                .filter(review => review.reviewerRole === "industry")
+                                                .map((review, index) => (
+                                                    <div key={index} className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <h5 className="font-medium">{review.fullName}</h5>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {new Date(review.reviewedAt).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <Star className="h-5 w-5 text-amber-500 mr-1" />
+                                                                <span className="font-bold">{review.rating * 20}/100</span>
+                                                            </div>
+                                                        </div>
+                                                        <p className="mt-2">{review.comments}</p>
+                                                        {review.reviewerId === user.email && (
+                                                            <button
+                                                                onClick={handleEvaluateAll}
+                                                                className={`mt-3 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
+                                                                        ${theme === 'dark'
+                                                                        ? 'bg-amber-900/50 hover:bg-amber-800 text-amber-300'
+                                                                        : 'bg-amber-100 hover:bg-amber-200 text-amber-600'
+                                                                    }`}
+                                                            >
+                                                                <PenSquare className="h-4 w-4" />
+                                                                Edit Review
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Submission Timeline */}
+                <div className={`rounded-xl overflow-hidden transition-all ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg border border-gray-200'}`}>
+                    <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <h2 className="flex items-center text-xl font-semibold">
+                                <History className="h-5 w-5 mr-3 text-blue-500" />
+                                Submission Timeline
+                            </h2>
+                            <span className={`text-sm px-3 py-1.5 rounded-full font-medium ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                                <span className="font-bold">{submissions.totalSubmissions}</span> submission{submissions.totalSubmissions !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {submissions.submissions.map((submission, index) => (
+                            <div
+                                key={submission.submissionId}
+                                className={`transition-all duration-200 ${theme === 'dark' ? 'hover:bg-gray-800/50' : 'hover:bg-gray-50'}`}
+                                onMouseEnter={() => setHoveredSubmission(submission.submissionId)}
+                                onMouseLeave={() => setHoveredSubmission(null)}
+                            >
+                                <div
+                                    className={`flex items-center justify-between p-5 cursor-pointer ${expandedSubmissions.includes(submission.submissionId) ?
+                                        theme === 'dark' ? 'bg-gray-800/30' : 'bg-gray-50' : ''}`}
+                                    onClick={() => toggleSubmission(submission.submissionId)}
+                                >
+                                    <div className="flex items-center">
+                                        <div className="relative mr-4">
+                                            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} ${hoveredSubmission === submission.submissionId ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}>
+                                                <User className="h-6 w-6 text-gray-500" />
+                                            </div>
+                                            {index === 0 && (
+                                                <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                                    <span className="text-white text-xs font-bold">✓</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center">
+                                                <h3 className="font-semibold text-lg mr-3">{submission.submittedByName}</h3>
+                                                {index === 0 && (
+                                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700'}`}>
+                                                        Latest
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                                                <CalendarDays className="h-4 w-4 mr-2" />
+                                                {new Date(submission.submittedAt).toLocaleString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEvaluate(submission);
+                                            }}
+                                            className={`px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2
+                                                    ${theme === 'dark'
+                                                    ? 'bg-blue-900/50 hover:bg-blue-800 text-blue-300 shadow'
+                                                    : 'bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm'
+                                                }`}
+                                        >
+                                            {user.role === "teacher" ? (
+                                                <GraduationCap className="h-4 w-4" />
+                                            ) : (
+                                                <HardHat className="h-4 w-4" />
+                                            )}
+                                            {user.role === "teacher" ? "Teacher Review" : "Industry Review"}
+                                        </button>
+                                        {expandedSubmissions.includes(submission.submissionId) ? (
+                                            <ChevronUp className="h-5 w-5 text-gray-500 transition-transform" />
+                                        ) : (
+                                            <ChevronDown className="h-5 w-5 text-gray-500 transition-transform" />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {expandedSubmissions.includes(submission.submissionId) && (
+                                    <div className={`p-5 pt-0 transition-all duration-300 ${theme === 'dark' ? 'bg-gray-800/20' : 'bg-gray-50'}`}>
+                                        <div className="pl-16">
+                                            {/* Comments Section */}
+                                            {submission.comments && (
+                                                <div className={`mb-5 p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                                                    <div className="flex items-start">
+                                                        <MessageSquareMore className="h-5 w-5 mt-0.5 mr-3 flex-shrink-0 text-gray-500" />
+                                                        <div>
+                                                            <h4 className="font-medium text-gray-600 dark:text-gray-300 mb-1">Comments</h4>
+                                                            <p className="text-sm">{submission.comments}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Files Section */}
+                                            <div className="mb-1">
+                                                <h4 className="font-medium mb-3 flex items-center text-gray-600 dark:text-gray-300">
+                                                    <FolderOpen className="h-5 w-5 mr-3 text-gray-500" />
+                                                    Submitted Files
+                                                </h4>
+                                                <div className="space-y-2 pl-1">
+                                                    {submission.files?.map((file, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className={`flex items-center justify-between p-3 rounded-lg ${theme === 'dark' ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100'}`}
+                                                        >
+                                                            <div className="flex items-center min-w-0">
+                                                                <File className="h-5 w-5 mr-3 flex-shrink-0 text-gray-500" />
+                                                                <span className="truncate text-sm font-medium">{file.fileName}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                                    {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                                <a
+                                                                    href={`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}${file.fileUrl}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className={`p-2 rounded-lg transition-all ${theme === 'dark'
+                                                                        ? 'text-blue-400 hover:bg-gray-700'
+                                                                        : 'text-blue-600 hover:bg-gray-200'
+                                                                        }`}
+                                                                    title="Download"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    <DownloadCloud className="h-5 w-5" />
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
 
             {
-        showModal && selectedSubmission && (
-            <EvaluationModal
-                submissionId={selectedSubmission.submissionId}
-                projectId={projectId}
-                selectionId={selectionId}
-                onClose={() => setShowModal(false)}
-                onReviewSubmit={handleReviewSubmit}
-                theme={theme}
-                user={{
-                    email: user.email,
-                    username: user.username,
-                    role: user.role
-                }}
-                existingReview={user.role === "teacher" ? userTeacherReview : userIndustryReview}
-            />
-        )
-    }
+                showModal && selectedSubmission && (
+                    <EvaluationModal
+                        submissionId={selectedSubmission.submissionId}
+                        projectId={projectId}
+                        selectionId={selectionId}
+                        onClose={() => setShowModal(false)}
+                        onReviewSubmit={handleReviewSubmit}
+                        theme={theme}
+                        user={{
+                            email: user.email,
+                            username: user.username,
+                            role: user.role
+                        }}
+                        existingReview={user.role === "teacher" ? userTeacherReview : userIndustryReview}
+                    />
+                )
+            }
         </div >
     );
 };

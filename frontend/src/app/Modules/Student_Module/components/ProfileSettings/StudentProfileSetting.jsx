@@ -7,6 +7,8 @@ import ErrorModal from "./Modal/ErrorModal"
 import Loading from "../../../../Components/loadingIndicator/loading";
 import { UNIVERSITY } from "../../../../../constants/constants";
 import { CircleX, Download, Edit, Loader2Icon, Save, UserCheck2, UserCircle2 } from 'lucide-react';
+import bcrypt from 'bcryptjs';
+
 
 const ProfileSetting = ({ theme }) => {
     const [user, setUser] = useState(null);
@@ -28,6 +30,7 @@ const ProfileSetting = ({ theme }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
 
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [isHashing, setIsHashing] = useState(false);
 
     const [deletingFile, setDeletingFile] = useState(null); // State for tracking file deletion
 
@@ -268,6 +271,15 @@ const ProfileSetting = ({ theme }) => {
 
         setIsSaving(true);
         try {
+             let valueToUpdate = formData[editingField];
+
+            if (editingField === "password") {
+                setIsHashing(true);
+                const hashedPassword = await bcrypt.hash(formData.password, 10);
+                valueToUpdate = hashedPassword;
+                setIsHashing(false);
+            }
+
             // Optimistic update
             const updatedUser = { ...user, [editingField]: formData[editingField] };
             setUser(updatedUser);
@@ -276,7 +288,7 @@ const ProfileSetting = ({ theme }) => {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ [editingField]: formData[editingField] })
+                body: JSON.stringify({ [editingField]: valueToUpdate })
             });
 
             if (!response.ok) throw new Error("Failed to update profile");

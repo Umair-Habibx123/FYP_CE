@@ -6,6 +6,8 @@ import ErrorModal from "./Modal/ErrorModal.jsx"
 import EditTeacherModal from "./Modal/EditModal.jsx"
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
 import { UNIVERSITY } from "../../../../../constants/constants.js";
+import bcrypt from 'bcryptjs';
+
 
 const ProfileSetting = ({ theme }) => {
     const [user, setUser] = useState(null);
@@ -25,6 +27,8 @@ const ProfileSetting = ({ theme }) => {
     const [files, setFiles] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
     const [deletingFile, setDeletingFile] = useState(null); // State for tracking file deletion
+        const [isHashing, setIsHashing] = useState(false);
+
 
 
     const handleRemoveFile = (fileName) => {
@@ -262,6 +266,16 @@ const ProfileSetting = ({ theme }) => {
 
         setIsSaving(true);
         try {
+
+             let valueToUpdate = formData[editingField];
+
+            if (editingField === "password") {
+                setIsHashing(true);
+                const hashedPassword = await bcrypt.hash(formData.password, 10);
+                valueToUpdate = hashedPassword;
+                setIsHashing(false);
+            }
+
             // Optimistic update
             const updatedUser = { ...user, [editingField]: formData[editingField] };
             setUser(updatedUser);
@@ -270,7 +284,7 @@ const ProfileSetting = ({ theme }) => {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ [editingField]: formData[editingField] })
+                body: JSON.stringify({ [editingField]: valueToUpdate })
             });
 
             if (!response.ok) throw new Error("Failed to update profile");

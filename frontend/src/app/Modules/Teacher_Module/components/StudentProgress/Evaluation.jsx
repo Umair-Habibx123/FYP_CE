@@ -470,11 +470,16 @@ const Evaluation = () => {
                                 {completionStatus.status.TeacherCompleted ? (
                                     <button
                                         onClick={() => handleMarkAsCompleted(false)}
-                                        disabled={isMarkingComplete}
-                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg gap-2
-                  ${theme === 'dark'
-                                                ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg'
-                                                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md'
+                                        disabled={isMarkingComplete || completionStatus.status.isCompleted === true}
+                                        className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all gap-2
+    ${theme === 'dark'
+                                                ? 'text-white shadow-lg'
+                                                : 'text-white shadow-md'}
+    ${isMarkingComplete || completionStatus.status.isCompleted
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : theme === 'dark'
+                                                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 hover:shadow-lg'
+                                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 hover:shadow-md'
                                             }`}
                                     >
                                         {isMarkingComplete ? (

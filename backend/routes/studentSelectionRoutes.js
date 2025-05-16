@@ -8,6 +8,7 @@ import TeacherSupervision from "../models/TeacherSupervision.js"
 import User from "../models/User.js"
 import Teacher from "../models/Teachers.js";
 import Student from "../models/Students.js"
+import { sendGroupSelectionNotification, sendGroupJoinNotification , sendRoleCompletionNotification  } from '../routes/notificationRoutes.js';
 
 dotenv.config();
 
@@ -51,6 +52,77 @@ router.get('/fetchUserSelectedProjects', async (req, res) => {
     }
 });
 
+
+router.get('/check-previous-selection/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        // Find all documents where the student is either a group leader or member
+        const studentSelections = await StudentSelection.find({
+            $or: [
+                { 'studentSelection.groupLeader': email },
+                { 'studentSelection.groupMembers': email }
+            ]
+        });
+
+        if (!studentSelections || studentSelections.length === 0) {
+            return res.status(200).json({ 
+                success: true, 
+                hasPreviousSelection: false,
+                isCompleted: null,
+                message: 'No previous selections found for this student'
+            });
+        }
+
+        // Get all selections where student is involved
+        const allStudentSelections = [];
+        studentSelections.forEach(doc => {
+            doc.studentSelection.forEach(selection => {
+                if (selection.groupLeader === email || 
+                    selection.groupMembers.includes(email)) {
+                    allStudentSelections.push(selection);
+                }
+            });
+        });
+
+        if (allStudentSelections.length === 0) {
+            return res.status(200).json({ 
+                success: true, 
+                hasPreviousSelection: false,
+                isCompleted: null,
+                message: 'No relevant selections found for this student'
+            });
+        }
+
+        // Check if ALL selections are completed
+        const allCompleted = allStudentSelections.every(
+            selection => selection.status.isCompleted
+        );
+
+        // Check if ANY selection is incomplete
+        const anyIncomplete = allStudentSelections.some(
+            selection => !selection.status.isCompleted
+        );
+
+        return res.status(200).json({ 
+            success: true, 
+            hasPreviousSelection: true,
+            isCompleted: allCompleted,
+            message: allCompleted 
+                ? 'All previous selections are completed' 
+                : 'Some previous selections are incomplete',
+            totalSelections: allStudentSelections.length,
+            completedCount: allStudentSelections.filter(s => s.status.isCompleted).length
+        });
+
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error checking previous selections',
+            error: error.message
+        });
+    }
+});
 
 router.get("/fetchselectionDetails/:projectId/:studentId", async (req, res) => {
     try {
@@ -177,6 +249,17 @@ router.post("/JoinExistingGroupforProject", async (req, res) => {
 
         await studentSelection.save();
 
+        // 7. Send notifications to:
+        //    - Project representative
+        //    - Approved supervisors
+        //    - Existing group members
+        await sendGroupJoinNotification(
+            projectId,
+            selectionId,
+            userEmail,
+            selection.groupMembers
+        );
+
         res.status(200).json({ 
             message: "Successfully joined the group", 
             project: studentSelection,
@@ -200,26 +283,28 @@ router.get('/check-university', async (req, res) => {
   }
 
   try {
+    
     const document = await StudentSelection.findById(docId);
 
-    if (!document) {
-       return res.json({ alreadySelected: false });
+    if (!document || document.studentSelection.length === 0) {
+      return res.json({ isClaimedByUniversity: false });
     }
-
-    const hasUniversity = document.studentSelection.some(
-      (selection) => selection.university === university
+    const isClaimed = document.studentSelection.some(
+      selection => selection.university === university
     );
 
-    return res.json({ alreadySelected: hasUniversity });
+    return res.json({ isClaimedByUniversity: isClaimed });
   } catch (error) {
     console.error('Error checking university selection:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: error.message 
+    });
   }
 });
 
 
 // api allowed each specific uni selection lenght must be equal to fixed project max groups... can total selection excedds as approval excedds
-
 
 router.post("/SelectProjectAsNewGroup", async (req, res) => {
     const { projectId, userEmail, userUniversity } = req.body;
@@ -273,6 +358,9 @@ router.post("/SelectProjectAsNewGroup", async (req, res) => {
         studentSelection.studentSelection.push(newSelection);
         await studentSelection.save();
 
+        // Send notifications to project representative and approved supervisors
+        await sendGroupSelectionNotification(projectId, userEmail, userUniversity);
+
         res.status(201).json({
             message: "New group created successfully",
             selectionId,
@@ -281,10 +369,10 @@ router.post("/SelectProjectAsNewGroup", async (req, res) => {
             maxGroupsPerUniversity: projectDetails.maxGroups
         });
     } catch (error) {
+        console.error("Error in SelectProjectAsNewGroup:", error);
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
-
 
 
 router.get("/fetchProjectsWithTeachers", async (req, res) => {
@@ -831,12 +919,17 @@ router.put("/MarkAsCompleted/:Id/:selectionId/:role/:value", async (req, res) =>
             return res.status(404).json({ message: "Student selection document not found" });
         }
 
-        // Use the instance method we created
+        // Use the instance method to update status
         await studentDoc.updateRoleStatus(selectionId, role, isCompleted);
         
         const updatedSelection = studentDoc.studentSelection.find(
             (s) => s.selectionId === selectionId
         );
+
+        // Send notification whenever any role marks as completed
+        if (isCompleted) {
+            await sendRoleCompletionNotification(Id, selectionId, role);
+        }
 
         res.status(200).json({ 
             message: "Role status updated successfully",
@@ -854,7 +947,6 @@ router.put("/MarkAsCompleted/:Id/:selectionId/:role/:value", async (req, res) =>
         });
     }
 });
-
 
 // Get completion status including role-specific statuses
 router.get("/getCompletionStatus/:projectId/:selectionId", async (req, res) => {
