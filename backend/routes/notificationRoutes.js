@@ -279,6 +279,9 @@ router.post('/project-approval-notification', async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+
+
 router.post('/project-approval-response', async (req, res) => {
     try {
         const {
@@ -331,6 +334,8 @@ router.post('/project-approval-response', async (req, res) => {
     }
 });
 
+
+
 export const sendSupervisionRequestNotification = async (projectId, teacherDetails) => {
     try {
         // Get the project to find the representative
@@ -361,7 +366,7 @@ export const sendSupervisionRequestNotification = async (projectId, teacherDetai
             },
             actionRequired: true,
             actionType: "approval",
-            actionLink: `/teacherSupervision/${projectId}/supervision`,
+            actionLink: `/teacherSupervision/${projectId}`,
             priority: "high",
         });
 

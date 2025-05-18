@@ -33,26 +33,58 @@ const IndustryDashboard = () => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [showNotificationScreen, setShowNotificationScreen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const notificationIconRef = useRef(null);
+    const [isNotificationIconVisible, setIsNotificationIconVisible] = useState(false);
 
-
-    const fetchUnreadCount = async () => {
-        if (!user?.email) return;
-        try {
-            const response = await fetch(
-                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
-                { credentials: "include" }
-            );
-            const data = await response.json();
-            if (data.success) setUnreadCount(data.count);
-        } catch (error) {
-            console.error("Error fetching unread count:", error);
-        }
-    };
 
     useEffect(() => {
-        fetchUnreadCount();
-    }, [user?.email]);
+        if (!user?.email || !isNotificationIconVisible) return;
 
+        const fetchUnreadCount = async () => {
+            try {
+                console.log('Fetching unread count...'); // Debug log
+                const response = await fetch(
+                    `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
+                    { credentials: "include" }
+                );
+                const data = await response.json();
+                console.log('Unread count response:', data); // Debug log
+                if (data.success) setUnreadCount(data.count);
+            } catch (error) {
+                console.error("Error fetching unread count:", error);
+            }
+        };
+
+        fetchUnreadCount();
+
+        // Set up polling if needed (e.g., every 30 seconds)
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [user?.email, isNotificationIconVisible]);
+
+    // Add Intersection Observer effect
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsNotificationIconVisible(entry.isIntersecting);
+            },
+            {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0 // Changed from 0.1 to 0
+            }
+        );
+
+        if (notificationIconRef.current) {
+            observer.observe(notificationIconRef.current);
+        }
+
+        return () => {
+            if (notificationIconRef.current) {
+                observer.unobserve(notificationIconRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const handleResize = () => {
@@ -261,18 +293,16 @@ const IndustryDashboard = () => {
                         <div className="flex items-center space-x-2 sm:space-x-4 px-1">
                             {/* Notification Button */}
                             <div className="relative" ref={notificationDropdownRef}>
-                                {/* Notification Button */}
                                 <div className="relative" ref={notificationDropdownRef}>
                                     <button
+                                        ref={notificationIconRef} // Move ref here
                                         onClick={() => {
                                             setShowNotificationScreen(true);
                                             setIsSidebarOpen(false);
-                                            // Reset unread count when opening notifications
-                                            // setUnreadCount(0);
                                         }}
                                         className={`cursor-pointer relative p-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg ${theme === "dark"
-                                                ? "bg-gray-700 hover:bg-gray-600 text-white"
-                                                : "bg-white hover:bg-gray-100 text-gray-800"
+                                            ? "bg-gray-700 hover:bg-gray-600 text-white"
+                                            : "bg-white hover:bg-gray-100 text-gray-800"
                                             }`}
                                     >
                                         {unreadCount > 0 ? (
@@ -281,7 +311,7 @@ const IndustryDashboard = () => {
                                             <Bell className="w-5 h-5" />
                                         )}
                                         {unreadCount > 0 && (
-                                            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center animate-pulse">
+                                            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center animate-pulse z-50">
                                                 {unreadCount > 9 ? "9+" : unreadCount}
                                             </span>
                                         )}
@@ -294,7 +324,6 @@ const IndustryDashboard = () => {
                                         onClose={() => setShowNotificationScreen(false)}
                                     />
                                 )}
-
                             </div>
 
                             <div className="flex items-center space-x-2 sm:space-x-4 px-1">

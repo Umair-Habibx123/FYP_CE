@@ -176,9 +176,9 @@ router.post("/insertTeacherApproval", async (req, res) => {
         name: fullName,
         role: "teacher",
       },
-      actionRequired: status === "needMoreInfo",
-      actionType: status === "needMoreInfo" ? "approval" : null,
-      actionLink: `/projects/${_id}`,
+      actionRequired: null,
+      actionType: null,
+      actionLink: `/project/${_id}`,
       priority: "high",
       metadata: {
         approvalStatus: status,
@@ -203,6 +203,7 @@ router.post("/insertTeacherApproval", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 router.get(
   "/getApprovalDetailForTeacherWhoApprove/:projectId",
