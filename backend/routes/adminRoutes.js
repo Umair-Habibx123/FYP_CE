@@ -9,6 +9,8 @@ import IndustryRepresentative from "../models/Industry.js";
 import dotenv from "dotenv";
 import axios from "axios";
 dotenv.config();
+import { getAllProjects } from "../controllers/adminProjectDataController.js";
+
 
 const router = Router();
 router.use(cookieParser());
@@ -356,5 +358,11 @@ router.put("/update-student-status", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+
+router.get('/admin_project_data', getAllProjects);
+
+
 
 export default router;
