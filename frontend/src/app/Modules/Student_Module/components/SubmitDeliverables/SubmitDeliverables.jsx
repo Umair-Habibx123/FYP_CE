@@ -23,6 +23,63 @@ const SubmitDeliverables = () => {
     const [isCheckingUser, setIsCheckingUser] = useState(true);
     const [supervision, setSupervision] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
+    const [hasPendingExtensionRequest, setHasPendingExtensionRequest] = useState(false);
+    const [isSubmittingExtension, setIsSubmittingExtension] = useState(false);
+    const [extensionData, setExtensionData] = useState({
+        newEndDate: '',
+        reason: ''
+    });
+
+
+    useEffect(() => {
+        const checkPendingRequests = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/check-pending-extension/${project._id}/${user.email}`, {
+                    headers: {}
+                });
+                setHasPendingExtensionRequest(response.data.hasPending);
+            } catch (error) {
+                console.error('Error checking extension requests:', error);
+            }
+        };
+
+        if (project?._id && user?.email) {
+            checkPendingRequests();
+        }
+    }, [project?._id, user?.email]);
+
+    const handleOpenExtensionModal = () => {
+        setIsExtensionModalOpen(true);
+    };
+
+    const handleSubmitExtensionRequest = async () => {
+        if (!extensionData.newEndDate || !extensionData.reason) {
+            alert('Please fill all fields');
+            return;
+        }
+
+        setIsSubmittingExtension(true);
+        try {
+            await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/extension-request`, {
+                projectId: project._id,
+                studentId: user._id,
+                newEndDate: extensionData.newEndDate,
+                reason: extensionData.reason
+            }, {
+                headers: {}
+            });
+
+            setHasPendingExtensionRequest(true);
+            setIsExtensionModalOpen(false);
+            toast.success('Extension request submitted successfully');
+        } catch (error) {
+            console.error('Error submitting extension request:', error);
+            toast.error(error.response?.data?.message || 'Failed to submit request');
+        } finally {
+            setIsSubmittingExtension(false);
+        }
+    };
 
     const containerRef = useRef(null);
     const navigate = useNavigate();
@@ -303,12 +360,47 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                 </div>
             </motion.div>
 
+            {/* {isProjectExpired(project.duration.endDate) && (
+                <div className={`m-4 p-4 rounded-lg text-center ${theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-200 text-gray-800"}`}>
+                    <p className="font-semibold">This project has expired and can no longer take actions.</p>
+                    <p>The end date was {new Date(project.duration.endDate).toLocaleDateString()}.</p>
+                    {(!selectionDetails?.status?.isCompleted) && selectionDetails?.groupLeader?.email === user.email && (
+                        <button
+                            className={`m-2 px-4 py-2 rounded-md ${theme === "dark" ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"} text-white`}
+                        >
+                            Apply for Extend Date
+                        </button>
+                    )}
+                </div>
+            )} */}
+
+
             {isProjectExpired(project.duration.endDate) && (
                 <div className={`m-4 p-4 rounded-lg text-center ${theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-200 text-gray-800"}`}>
                     <p className="font-semibold">This project has expired and can no longer take actions.</p>
                     <p>The end date was {new Date(project.duration.endDate).toLocaleDateString()}.</p>
+                    {(!selectionDetails?.status?.isCompleted) && selectionDetails?.groupLeader?.email === user.email && (
+                        <>
+                            {!hasPendingExtensionRequest && (
+                                <button
+                                    onClick={handleOpenExtensionModal}
+                                    className={`m-2 px-4 py-2 rounded-md ${theme === "dark" ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"} text-white`}
+                                >
+                                    Apply for Date Extension
+                                </button>
+                            )}
+                            {hasPendingExtensionRequest && (
+                                <p className="text-yellow-500 font-medium">
+                                    You have a pending extension request
+                                </p>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
+
+
+
 
             {/* Content Section - Scrollable */}
             <motion.div
@@ -668,6 +760,93 @@ ${theme === "dark" ? "bg-gray-900 text-gray-100 border-gray-700" : "bg-white tex
                     </div>
                 )
             }
+
+
+            {/* Extension Request Modal */}
+            {isExtensionModalOpen && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className={`p-6 rounded-xl w-full max-w-md shadow-xl ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-semibold">Request Date Extension</h3>
+                            <button
+                                onClick={() => setIsExtensionModalOpen(false)}
+                                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">New End Date</label>
+                                <input
+                                    type="date"
+                                    value={extensionData.newEndDate}
+                                    onChange={(e) => setExtensionData({ ...extensionData, newEndDate: e.target.value })}
+                                    min={new Date(Math.max(
+                                        new Date().getTime(),
+                                        new Date(project.duration.endDate).getTime()
+                                    )).toISOString().split('T')[0]}
+                                    className={`w-full p-2.5 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${theme === "dark"
+                                            ? "bg-gray-700 border-gray-600 text-white"
+                                            : "bg-white border-gray-300 text-gray-900"
+                                        }`}
+                                />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Current end date: {new Date(project.duration.endDate).toLocaleDateString()}
+                                    </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Reason</label>
+                                <textarea
+                                    value={extensionData.reason}
+                                    onChange={(e) => setExtensionData({ ...extensionData, reason: e.target.value })}
+                                    className={`resize-none w-full p-2.5 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${theme === "dark"
+                                            ? "bg-gray-700 border-gray-600 text-white"
+                                            : "bg-white border-gray-300 text-gray-900"
+                                        }`}
+                                    rows={5}
+                                    placeholder="Explain why you need an extension..."
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    onClick={() => setIsExtensionModalOpen(false)}
+                                    className={`px-4 py-2 rounded-lg font-medium transition ${theme === "dark"
+                                            ? "bg-gray-700 hover:bg-gray-600 text-white"
+                                            : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                                        }`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSubmitExtensionRequest}
+                                    disabled={isSubmittingExtension || !extensionData.newEndDate || !extensionData.reason}
+                                    className={`px-4 py-2 rounded-lg font-medium text-white transition ${isSubmittingExtension || !extensionData.newEndDate || !extensionData.reason
+                                            ? 'bg-blue-400 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
+                                >
+                                    {isSubmittingExtension ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Submitting...
+                                        </span>
+                                    ) : 'Submit Request'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div >
     )
 }

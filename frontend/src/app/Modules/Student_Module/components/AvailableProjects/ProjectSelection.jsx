@@ -58,7 +58,7 @@ const ProjectSelection = () => {
       );
       const data = await response.json();
 
-      if (data.alreadySelected) {
+      if (data.isClaimedByUniversity) {
         setAlreadyClaimedBySameUniversity(true);
 
         setClaimedByInfo({

@@ -5,6 +5,7 @@ import { deleteFileFromGridFS } from "../routes/gridFsRoutes.js";
 import mongoose from "mongoose";
 import IndustryRepresentative from "../models/Industry.js";
 import StudentSelection from "../models/StudentSelection.js";
+import { isValidObjectId } from 'mongoose';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -87,12 +88,12 @@ router.post("/AddProject", express.json(), async (req, res) => {
       industryName,
       attachments: parsedAttachments,
       ...(selection === "Group" && { maxStudentsPerGroup, maxGroups }),
-      //  editStatus : "unlocked",
-      //  unlockedUntil : null,
-      //  lastEditRequestId : null
+       editStatus : "unlocked",
+       unlockedUntil : null,
+       lastEditRequestId : null
     });
 
-    const savedProject = await newProject.save();
+     const savedProject = await newProject.save();
     await IndustryRepresentative.updateOne(
       { _id: representativeId },
       { $push: { postedProjects: savedProject._id } }
@@ -103,6 +104,12 @@ router.post("/AddProject", express.json(), async (req, res) => {
       .json({ message: "Project added successfully", project: savedProject });
   } catch (error) {
     console.error("❌ Error saving project:", error);
+    
+    // Handle duplicate key error (E11000)
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.title) {
+      return res.status(400).json({ error: "Project with this Title already exists. Project title must be unique" });
+    }
+    
     res.status(500).json({ error: "Failed to add project. Please try again." });
   }
 });
@@ -228,5 +235,6 @@ router.get("/getCompletedProjects", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
+
 
 export default router;

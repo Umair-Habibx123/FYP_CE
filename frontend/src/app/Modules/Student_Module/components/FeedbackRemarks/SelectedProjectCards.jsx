@@ -100,6 +100,13 @@ const AvailableProjects = ({ theme }) => {
         setFilteredProjects(filtered);
     }, [searchQuery, projects, filterOption, selectionDetails]);
 
+       const isDurationExceeded = (endDate) => {
+        if (!endDate) return false;
+        const today = new Date();
+        const projectEndDate = new Date(endDate);
+        return today > projectEndDate;
+    };
+
     const handleSortChange = (option) => {
         setSortOption(option);
 
@@ -260,10 +267,19 @@ const AvailableProjects = ({ theme }) => {
                             return (
                                 <div
                                     key={project._id}
-                                    className={`rounded-lg shadow-lg p-4 border cursor-pointer hover:shadow-xl transition-transform transform hover:scale-105 h-full flex flex-col ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
+                                    className={`relative rounded-lg shadow-lg p-4 border cursor-pointer hover:shadow-xl transition-transform transform hover:scale-105 h-full flex flex-col ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}`}
                                     onClick={() => navigate(`/RatingsOrRemarks/${project._id}/${projectSelection.selectionId}`)}
 
                                 >
+
+                                       {isDurationExceeded(project.duration?.endDate) && !isCompleted &&(
+                                        <div className="absolute top-0 right-0 transform translate-y-[-50%] translate-x-[20%]">
+                                            <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
+                                                End Date Exceeded
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between items-center">
                                         <h3 className="font-semibold text-lg">{project.title}</h3>
                                         <span className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>{project.projectType}</span>
@@ -297,6 +313,7 @@ const AvailableProjects = ({ theme }) => {
                                             </div>
                                         )}
                                     </div>
+
 
                                     {/* Display Group Members */}
                                     {project.groupMembers && project.groupMembers.length > 0 && (

@@ -10,7 +10,6 @@ import PrivacyPolicyUpdate from "./components/PrivacyPolicyUpdate/PrivacyPolicyU
 import { Sun, Moon, LayoutDashboard, UserCog, Settings, FileText, X, Menu, LogOut, UserCircle2, Bot, Vault, SquareChartGantt } from "lucide-react";
 import UserManagement from "./components/UserManagement/UserManagement.jsx";
 import Chatbot from "../AI_Module/Chatbot_v2.jsx";
-import AllCompletedProjectCards from "./components/Success-stories-update/ProjectCards.jsx"
 
 
 const AdminDashboard = () => {
@@ -80,7 +79,7 @@ const AdminDashboard = () => {
         { label: "Overview", icon: <LayoutDashboard />, key: "Overview" },
         { label: "UserManage", icon: <UserCog />, key: "User Management" },
         { label: "Project Management", icon: <SquareChartGantt />, key: "Project Management" },
-        { label: "Success Stories", icon: <Vault />, key: "Success Stories" },
+        // { label: "Success Stories", icon: <Vault />, key: "Success Stories" },
         { label: "Update Policy", icon: <FileText />, key: "Update Privacy Policy" },
         { label: "Profile", icon: <Settings />, key: "Profile Settings" },
     ];
@@ -146,11 +145,11 @@ const AdminDashboard = () => {
                 return <UserManagement theme={theme} />;
 
             case "Project Management":
-                return <Overview theme={theme} />;
+                return<div>Project Details here......</div>;
 
 
-            case "Success Stories":
-                return <AllCompletedProjectCards theme={theme} />;
+            // case "Success Stories":
+            //     return <div>Success stories here......</div>;
 
 
             case "Update Privacy Policy":

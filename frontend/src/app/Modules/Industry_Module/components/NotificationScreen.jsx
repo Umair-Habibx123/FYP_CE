@@ -815,7 +815,7 @@ const NotificationScreen = ({ theme, onClose }) => {
                                         >
                                             <a
                                                 href={selectedNotification.actionLink}
-                                                target="_blank"
+                                                target="_self"
                                                 rel="noopener noreferrer"
                                                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium shadow-sm ${theme === 'dark'
                                                     ? 'bg-blue-600 hover:bg-blue-700 text-white'

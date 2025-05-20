@@ -62,11 +62,10 @@ const AvailableProjects = ({ theme }) => {
 
                     const claimedResponses = await Promise.all(claimedPromises);
                     const claimedIds = claimedResponses
-                        .filter(response => response.data.alreadySelected)
+                        .filter(response => response.data.isClaimedByUniversity)
                         .map((_, index) => sortedProjects[index]._id);
 
                     setClaimedProjects(claimedIds);
-
 
                     // Filter out projects where user is already a member
                     const filtered = sortedProjects.filter(project => !selectedIds.includes(project._id));
@@ -315,16 +314,18 @@ const AvailableProjects = ({ theme }) => {
                                     )}
                                 </div>
 
-                                {isDurationExceeded(project.duration?.endDate) && (
-                                    <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
-                                        End Date Exceeded
-                                    </span>
-                                )}
-                                {claimedProjects.includes(project._id) && (
+                                {claimedProjects.includes(project._id) ? (
                                     <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}>
                                         Already Claimed by someone else
                                     </span>
+                                ) : (
+                                    isDurationExceeded(project.duration?.endDate) && (
+                                        <span className={`text-xs px-2 py-1 rounded-full ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
+                                            End Date Exceeded
+                                        </span>
+                                    )
                                 )}
+
                             </div>
                         ))
                     )}

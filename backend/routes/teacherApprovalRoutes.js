@@ -159,7 +159,7 @@ router.post("/insertTeacherApproval", async (req, res) => {
           ? `Your project has been rejected by ${fullName}. ${
               comments ? "Reason: " + comments : ""
             }`
-          : `Your project requires changes as requested by ${fullName}. ${
+          : `Your project requires additional information for approval by: ${fullName}. ${
               comments ? "Details: " + comments : ""
             }`,
       relatedEntity: {

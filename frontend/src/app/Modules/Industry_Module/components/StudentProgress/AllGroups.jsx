@@ -5,6 +5,8 @@ import { useAuth } from "../../../../../auth/AuthContext.jsx";
 import PropTypes from "prop-types";
 import Loading from "../../../../Components/loadingIndicator/loading.jsx";
 import { User, ChevronLeft, FileText, CheckCircle, AlertCircle, Users, Lock, LogIn, Calendar, ArrowRight, Search, Filter, ChevronDown, ChevronUp, ArrowLeft, ClipboardList, School } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify"
+
 
 const AllGroups = () => {
     const { projectId } = useParams();
@@ -24,17 +26,52 @@ const AllGroups = () => {
     const [universityFilter, setUniversityFilter] = useState("all");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [availableUniversities, setAvailableUniversities] = useState([]);
+    const [loadingExtension, setLoadingExtension] = useState(true);
+    const [extensionRequest, setExtensionRequest] = useState(null);
+    const [projectDetail, setProjectDetail] = useState(null);
+    const [firstSelectionId, setFirstSelectionId] = useState(null);
+    const [hasPendingRequest, setHasPendingRequest] = useState(false);
+    const [isDateExpired, setIsDateExpired] = useState(false);
+    const [showApproveModal, setShowApproveModal] = useState(false);
+    const [customEndDate, setCustomEndDate] = useState("");
+    const [useCustomDate, setUseCustomDate] = useState(false);
+    const [isApproving, setIsApproving] = useState(false);
 
+    const checkExistingExtensionRequest = async (projectId, userId) => {
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/check-extension-request/${projectId}/${userId}`
+            );
+            if (!response.ok) throw new Error("Failed to check extension requests");
+            return await response.json();
+        } catch (error) {
+            console.error("Error checking extension requests:", error);
+            return { exists: false };
+        } finally {
+            setLoadingExtension(false);
+        }
+    };
 
     useEffect(() => {
         fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/fetchProjectDetailById/${projectId}`)
             .then((res) => res.json())
-            .then((data) => setProjectData(data))
+            .then((data) => {
+                setProjectData(data);
+                // Check if project end date has passed
+                if (data?.duration?.endDate) {
+                    const endDate = new Date(data.duration.endDate);
+                    const today = new Date();
+                    setIsDateExpired(today > endDate);
+                }
+            })
             .catch((err) => console.error("Error fetching project details:", err));
     }, [projectId]);
 
 
+
     useEffect(() => {
+        setLoadingExtension(true);
+
         const fetchProjectDetails = async () => {
             try {
                 const response = await axios.get(
@@ -46,23 +83,19 @@ const AllGroups = () => {
                     }
                 );
 
-
-                // Handle case when no selection groups are found
                 if (response.data?.message === "No selection groups found for this project") {
                     setProject({
                         ...response.data,
-                        studentSelection: [] // Set empty array for studentSelection
-
+                        studentSelection: []
                     });
-                    console.log("data", response);
-
                 } else {
                     setProject(response.data);
-                    console.log("data", response);
-
+                    if (response.data.studentSelection.length > 0) {
+                        const firstSelectionId = response.data.studentSelection[0].selectionId;
+                        setFirstSelectionId(firstSelectionId);
+                    }
                 }
 
-                // Extract unique universities from the response
                 if (response.data?.studentSelection) {
                     const universities = [...new Set(
                         response.data.studentSelection.map(selection => selection.university)
@@ -71,7 +104,6 @@ const AllGroups = () => {
                 }
             } catch (err) {
                 console.error("Error fetching project details:", err);
-                // Only show error if it's not the "no groups found" message
                 if (err.response?.data?.message !== "No selection groups found for this project") {
                     setError("Failed to load project details");
                 } else {
@@ -84,10 +116,134 @@ const AllGroups = () => {
             }
         };
 
+        const fetchExtensionRequests = async () => {
+            try {
+                if (user?.email) {
+                    const existingResult = await checkExistingExtensionRequest(projectId, user.email);
+                    if (existingResult.exists) {
+                        setExtensionRequest(existingResult.request);
+                        setHasPendingRequest(true);
+                    } else {
+                        setHasPendingRequest(false);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching extension requests:", error);
+            }
+        };
+
         if (projectId && user?.email) {
             fetchProjectDetails();
+            fetchExtensionRequests();
         }
     }, [projectId, user]);
+
+
+
+    const handleApproveExtension = async () => {
+        try {
+            setIsApproving(true);
+
+            let newEndDate;
+
+            if (useCustomDate && customEndDate) {
+                newEndDate = customEndDate;
+            } else {
+                newEndDate = extensionRequest.date;
+            }
+
+            console.log(newEndDate);
+
+
+            const notificationResponse = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/respond-to-extension`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        notificationId: extensionRequest.notificationId,
+                        representativeId: user.email,
+                        decision: "approved",
+                        requestedEndDate: newEndDate, // Add this line to send the new date
+                    }),
+                }
+            );
+
+            if (!notificationResponse.ok) {
+                const errorData = await notificationResponse.json();
+                throw new Error(errorData.message || "Failed to process extension approval");
+            }
+
+            const responseData = await notificationResponse.json();
+            const updatedProject = responseData.updatedProject;
+
+            setProjectData(prev => ({
+                ...prev,
+                duration: {
+                    ...prev.duration,
+                    endDate: newEndDate
+                }
+            }));
+
+            toast.success("Extension request approved successfully");
+            setExtensionRequest(null);
+            setHasPendingRequest(false);
+            setShowApproveModal(false);
+            setCustomEndDate("");
+            setUseCustomDate(false);
+            setIsDateExpired(false);
+
+        } catch (error) {
+            console.error("Error approving extension:", error);
+            toast.error(error.message || "Failed to approve extension request");
+        } finally {
+            setIsApproving(false);
+        }
+    };
+
+
+    const handleRejectExtension = async () => {
+        try {
+            setIsApproving(true);
+
+
+            const notificationResponse = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/respond-to-extension`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        notificationId: extensionRequest.notificationId,
+                        representativeId: user.email,
+                        decision: "rejected",
+                    }),
+                }
+            );
+
+            if (!notificationResponse.ok) {
+                const errorData = await notificationResponse.json();
+                throw new Error(errorData.message || "Failed to process extension approval");
+            }
+
+            toast.success("Extension request rejected successfully");
+            setExtensionRequest(null);
+            setHasPendingRequest(false);
+            setShowApproveModal(false);
+            setCustomEndDate("");
+            setUseCustomDate(false);
+            setIsDateExpired(false);
+
+        } catch (error) {
+            console.error("Error approving extension:", error);
+            toast.error(error.message || "Failed to approve extension request");
+        } finally {
+            setIsApproving(false);
+        }
+    };
 
     const getUniqueStudents = (selection) => {
         const uniqueEmails = new Set();
@@ -98,6 +254,13 @@ const AllGroups = () => {
             }
             return false;
         });
+    };
+
+     const isDurationExceeded = (endDate) => {
+        if (!endDate) return false;
+        const today = new Date();
+        const projectEndDate = new Date(endDate);
+        return today > projectEndDate;
     };
 
     const filteredGroups = project?.studentSelection?.filter(selection => {
@@ -208,18 +371,15 @@ const AllGroups = () => {
         );
     }
 
-    const handleBackClick = () => {
-        navigate(-1);
-    };
-
     return (
         <div className={`-mt-[70px] md:-mt-[90px] min-h-screen p-4 md:p-8 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-800"}`}>
+            <ToastContainer />
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-6">
                         <button
-                            onClick={handleBackClick}
+                            onClick={() => navigate(-1)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${theme === "dark" ? "hover:bg-gray-800/50 text-blue-400" : "hover:bg-gray-100 text-blue-600"}`}
                         >
                             <ChevronLeft className="w-5 h-5" />
@@ -242,10 +402,59 @@ const AllGroups = () => {
                             Manage and evaluate student groups for this project
                         </p>
                     </div>
+
+
+
+
+                    {isDateExpired && extensionRequest && extensionRequest.isRecipient && (
+                        <div className={`mb-6 p-4 rounded-lg ${theme === "dark" ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-100"}`}>
+                            <div className="flex items-start gap-4">
+                                <AlertCircle className={`w-6 h-6 mt-0.5 flex-shrink-0 ${theme === "dark" ? "text-yellow-400" : "text-yellow-600"}`} />
+                                <div className="flex-1">
+                                    <h3 className={`font-semibold ${theme === "dark" ? "text-yellow-300" : "text-yellow-700"}`}>
+                                        Date Extension Request
+                                    </h3>
+                                    <div className={`mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 ${theme === "dark" ? "text-yellow-400" : "text-yellow-600"}`}>
+                                        <div>
+                                            <p><span className="font-medium">Requested by:</span> {extensionRequest.requestedBy}</p>
+                                            <p><span className="font-medium">New end date:</span> {new Date(extensionRequest.date).toLocaleDateString()}</p>
+                                        </div>
+                                        <div>
+                                            <p><span className="font-medium">Reason:</span> {extensionRequest.reason}</p>
+                                            <p><span className="font-medium">Submitted:</span> {new Date(extensionRequest.submittedAt).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        <button
+                                            onClick={() => setShowApproveModal(true)}
+                                            className={`px-4 py-2 rounded-md font-medium ${theme === "dark" ? "bg-green-900/50 hover:bg-green-900/70 text-green-300" : "bg-green-100 hover:bg-green-200 text-green-700"}`}
+                                        >
+                                            Approve Extension
+                                        </button>
+                                        <button
+                                            onClick={handleRejectExtension}
+                                            className={`px-4 py-2 rounded-md font-medium ${theme === "dark" ? "bg-red-900/50 hover:bg-red-900/70 text-red-300" : "bg-red-100 hover:bg-red-200 text-red-700"}`}
+                                        >
+
+                                            {isApproving ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Processing...
+                                                </>
+                                            ) : "Reject Extension"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Search and Filter Section */}
 
+                {/* Search and Filter Section */}
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
                     {/* Search Input - Full width on mobile, flex-1 on desktop */}
                     <div className={`relative w-full md:flex-1 ${theme === "dark" ? "bg-gray-800/50" : "bg-white"} rounded-lg shadow transition-all`}>
@@ -418,11 +627,17 @@ const AllGroups = () => {
 
                 {/* Main Content */}
                 <div className="mb-6">
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="relative flex items-center gap-4 mb-6">
                         <div className={`p-3 rounded-xl ${theme === "dark" ? "bg-blue-900/30 text-blue-400" : "bg-blue-100 text-blue-600"}`}>
                             <ClipboardList className="w-6 h-6" />
                         </div>
                         <h2 className="text-xl md:text-2xl font-semibold">Evaluation Groups</h2>
+
+                        {isDurationExceeded(projectData.duration?.endDate) && (
+                            <span className={`text-xs px-2 py-1 rounded-full -translate-y-1/2 ${theme === "dark" ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}>
+                                End Date Exceeded
+                            </span>
+                        )}
                     </div>
 
                     {filteredGroups.length === 0 ? (
@@ -580,6 +795,92 @@ const AllGroups = () => {
                     )}
                 </div>
             </div>
+
+            {/* Approve Extension Modal */}
+            {showApproveModal && (
+                <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${theme === "dark" ? "bg-black/70" : "bg-black/50"}`}>
+                    <div className={`w-full max-w-md rounded-xl p-6 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+                        <h3 className={`text-xl font-semibold mb-4 ${theme === "dark" ? "text-gray-100" : "text-gray-800"}`}>
+                            Approve Extension Request
+                        </h3>
+
+                        <div className="mb-4">
+                            <p className={`mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                                The student requested an extension until:
+                            </p>
+                            <p className={`font-medium ${theme === "dark" ? "text-blue-300" : "text-blue-600"}`}>
+                                {new Date(extensionRequest.date).toLocaleDateString()}
+                            </p>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className={`flex items-center mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={useCustomDate}
+                                    onChange={(e) => setUseCustomDate(e.target.checked)}
+                                    className="mr-2"
+                                    disabled={isApproving} // Disable checkbox during approval
+                                />
+                                Set a different end date
+                            </label>
+
+                            {useCustomDate && (
+                                <div className="mt-2">
+                                    <label className={`block text-sm font-medium mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                                        New End Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        className={`w-full px-3 py-2 rounded-md border ${theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-800"} ${isApproving ? "opacity-70 cursor-not-allowed" : ""}`}
+                                        disabled={isApproving} // Disable input during approval
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={() => {
+                                    if (!isApproving) {
+                                        setShowApproveModal(false);
+                                        setCustomEndDate("");
+                                        setUseCustomDate(false);
+                                    }
+                                }}
+                                disabled={isApproving}
+                                className={`px-4 py-2 rounded-md flex items-center justify-center ${theme === "dark" ? "bg-gray-700 hover:bg-gray-600 text-gray-200" : "bg-gray-200 hover:bg-gray-300 text-gray-800"} ${isApproving ? "opacity-70 cursor-not-allowed" : ""}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleApproveExtension}
+                                disabled={isApproving || (useCustomDate && !customEndDate)}
+                                className={`px-4 py-2 rounded-md flex items-center justify-center ${isApproving ?
+                                    (theme === "dark" ? "bg-green-800/50 text-green-200/50" : "bg-green-100 text-green-400") :
+                                    (useCustomDate && !customEndDate) ?
+                                        (theme === "dark" ? "bg-green-800/50 text-green-200/50 cursor-not-allowed" : "bg-green-100 text-green-400 cursor-not-allowed") :
+                                        (theme === "dark" ? "bg-green-700 hover:bg-green-600 text-white" : "bg-green-600 hover:bg-green-700 text-white")
+                                    }`}
+                            >
+                                {isApproving ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </>
+                                ) : "Approve Extension"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

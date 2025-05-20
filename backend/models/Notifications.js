@@ -96,6 +96,7 @@ const notificationsSchema = new Schema(
                 "supervisorChangeRequest",
                 "universityTransferRequest",
                 "projectWithdrawal",
+                "dateExtensionApproval"
             ],
             index: true,
         },
@@ -134,7 +135,7 @@ const notificationsSchema = new Schema(
         // New field for action type when action is required
         actionType: {
             type: String,
-            enum: ["approval", "information", "confirmation", null],
+            enum: ["finalApproval" , "dateExtensionApproval" , "approval", "information", "confirmation", null],
             default: null,
         },
         actionLink: {

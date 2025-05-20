@@ -289,6 +289,7 @@ router.get('/check-university', async (req, res) => {
     if (!document || document.studentSelection.length === 0) {
       return res.json({ isClaimedByUniversity: false });
     }
+    
     const isClaimed = document.studentSelection.some(
       selection => selection.university === university
     );

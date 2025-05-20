@@ -22,7 +22,6 @@ const IndustryDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
     const [showOptions, setShowOptions] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);
     const { user, isAuthLoading } = useAuth();
     const themeDropdownRef = useRef(null);
     const notificationDropdownRef = useRef(null);
@@ -34,57 +33,33 @@ const IndustryDashboard = () => {
     const [showNotificationScreen, setShowNotificationScreen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const notificationIconRef = useRef(null);
-    const [isNotificationIconVisible, setIsNotificationIconVisible] = useState(false);
+    const [isFetchingCount, setIsFetchingCount] = useState(null);
 
 
-    useEffect(() => {
-        if (!user?.email || !isNotificationIconVisible) return;
+    const fetchUnreadCount = async () => {
+        try {
+            setIsFetchingCount(true);
+            if (!user?.email) return;
 
-        const fetchUnreadCount = async () => {
-            try {
-                console.log('Fetching unread count...'); // Debug log
-                const response = await fetch(
-                    `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
-                    { credentials: "include" }
-                );
-                const data = await response.json();
-                console.log('Unread count response:', data); // Debug log
-                if (data.success) setUnreadCount(data.count);
-            } catch (error) {
-                console.error("Error fetching unread count:", error);
-            }
-        };
+            const response = await fetch(
+                `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/notifications/unread-count/${user.email}`,
+                { credentials: "include" }
+            );
+            const data = await response.json();
+            if (data.success) setUnreadCount(data.count);
+        } catch (error) {
 
-        fetchUnreadCount();
-
-        // Set up polling if needed (e.g., every 30 seconds)
-        const interval = setInterval(fetchUnreadCount, 30000);
-        return () => clearInterval(interval);
-    }, [user?.email, isNotificationIconVisible]);
-
-    // Add Intersection Observer effect
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsNotificationIconVisible(entry.isIntersecting);
-            },
-            {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0 // Changed from 0.1 to 0
-            }
-        );
-
-        if (notificationIconRef.current) {
-            observer.observe(notificationIconRef.current);
+            console.error("Error fetching unread count:", error);
         }
+        finally {
+            setIsFetchingCount(false);
+        }
+    };
 
-        return () => {
-            if (notificationIconRef.current) {
-                observer.unobserve(notificationIconRef.current);
-            }
-        };
-    }, []);
+    useEffect(() => {
+        fetchUnreadCount();
+    }, [user?.email]);
+
 
     useEffect(() => {
         const handleResize = () => {
@@ -113,8 +88,6 @@ const IndustryDashboard = () => {
                 }
             }
         };
-
-
 
         // Set loading to false when all event listeners are set up
         const setupListeners = () => {
@@ -199,25 +172,6 @@ const IndustryDashboard = () => {
     };
 
 
-    // Handle click outside for notifications dropdown
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target)) {
-                const notificationButton = document.querySelector('.notification-button');
-                if (!notificationButton || !notificationButton.contains(event.target)) {
-                    setShowNotifications(false);
-                }
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-
-
     const renderContent = () => {
 
         switch (selectedOption) {
@@ -241,9 +195,10 @@ const IndustryDashboard = () => {
     };
 
 
-    if (isAuthLoading || isLoading) {
+    if (isAuthLoading || isLoading || isFetchingCount) {
         return <Loading />;
     }
+
     const isMobile = windowWidth <= 1024;
 
     return (
@@ -295,7 +250,7 @@ const IndustryDashboard = () => {
                             <div className="relative" ref={notificationDropdownRef}>
                                 <div className="relative" ref={notificationDropdownRef}>
                                     <button
-                                        ref={notificationIconRef} // Move ref here
+                                        ref={notificationIconRef}
                                         onClick={() => {
                                             setShowNotificationScreen(true);
                                             setIsSidebarOpen(false);
@@ -305,11 +260,13 @@ const IndustryDashboard = () => {
                                             : "bg-white hover:bg-gray-100 text-gray-800"
                                             }`}
                                     >
+
                                         {unreadCount > 0 ? (
                                             <BellDot className="w-5 h-5" />
                                         ) : (
                                             <Bell className="w-5 h-5" />
                                         )}
+
                                         {unreadCount > 0 && (
                                             <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center animate-pulse z-50">
                                                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -321,7 +278,10 @@ const IndustryDashboard = () => {
                                 {showNotificationScreen && (
                                     <NotificationScreen
                                         theme={theme}
-                                        onClose={() => setShowNotificationScreen(false)}
+                                        onClose={() => {
+                                            setShowNotificationScreen(false);
+                                            fetchUnreadCount();
+                                        }}
                                     />
                                 )}
                             </div>
