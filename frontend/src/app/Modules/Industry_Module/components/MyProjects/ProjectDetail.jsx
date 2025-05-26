@@ -23,10 +23,9 @@ const ProjectDetail = () => {
     const [selectedUniversity, setSelectedUniversity] = useState(null);
     const [universityApprovals, setUniversityApprovals] = useState([]);
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-    const [isLoadingApprovals, setIsLoadingApprovals] = useState(false);
+    const [modificationRequests, setModificationRequests] = useState([]);
 
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
-
 
     const [approvedUniversities, setApprovedUniversities] = useState([]);
     const [rejectedUniversities, setRejectedUniversities] = useState([]);
@@ -34,6 +33,9 @@ const ProjectDetail = () => {
 
     const containerRef = useRef(null);
 
+    const [isEditRequestModalOpen, setIsEditRequestModalOpen] = useState(false);
+    const [isDeleteRequestModalOpen, setIsDeleteRequestModalOpen] = useState(false);
+    const [requestReason, setRequestReason] = useState("");
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -44,6 +46,96 @@ const ProjectDetail = () => {
     useEffect(() => {
         document.body.className = theme;
     }, [theme]);
+
+    const fetchModificationRequests = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getModificationRequests/${id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setModificationRequests(data.requests || []);
+            }
+        } catch (error) {
+            console.error("Error fetching modification requests:", error);
+            toast.error("Error fetching modification requests");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRequestEdit = async () => {
+        if (!requestReason.trim()) {
+            toast.error("Please provide a reason for the edit request");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/createProjectModificationRequest`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    projectId: project._id,
+                    requestType: "edit",
+                    requestedBy: user.email,
+                    reason: requestReason,
+                }),
+            });
+
+            if (response.ok) {
+                toast.success("Edit request submitted successfully!");
+                setIsEditRequestModalOpen(false);
+                setRequestReason("");
+                fetchModificationRequests(); // Refresh requests after submission
+            } else {
+                toast.error("Failed to submit edit request");
+            }
+        } catch (error) {
+            console.error("Error submitting edit request:", error);
+            toast.error("Error submitting edit request");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRequestDelete = async () => {
+        if (!requestReason.trim()) {
+            toast.error("Please provide a reason for the delete request");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/createProjectModificationRequest`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    projectId: project._id,
+                    requestType: "delete",
+                    requestedBy: user.email,
+                    reason: requestReason,
+                }),
+            });
+
+            if (response.ok) {
+                toast.success("Delete request submitted successfully!");
+                setIsDeleteRequestModalOpen(false);
+                setRequestReason("");
+                fetchModificationRequests(); // Refresh requests after submission
+            } else {
+                toast.error("Failed to submit delete request");
+            }
+        } catch (error) {
+            console.error("Error submitting delete request:", error);
+            toast.error("Error submitting delete request");
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     const handleCancelEdit = () => {
@@ -103,13 +195,28 @@ const ProjectDetail = () => {
             }
         };
 
+        if (id && project?.editStatus === "locked") {
+            fetchModificationRequests();
+        }
+
         if (id) {
             fetchUniversitiesStatus();
         }
-    }, [id]);
+    }, [id, project?.editStatus]);
+
+
+    const hasPendingEditRequest = modificationRequests.some(
+        request => request.requestType === "edit" && request.requestStatus === "pending"
+    );
+
+    const hasPendingDeleteRequest = modificationRequests.some(
+        request => request.requestType === "delete" && request.requestStatus === "pending"
+    );
+
+
 
     const fetchUniversityApprovals = async (universityName) => {
-        setIsLoadingApprovals(true);
+        setLoading(true);
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/getUniversityApprovals?projectId=${id}&university=${universityName}`
@@ -125,7 +232,7 @@ const ProjectDetail = () => {
             console.error("Error fetching approval details:", error);
             toast.error("Error fetching approval details");
         } finally {
-            setIsLoadingApprovals(false);
+            setLoading(false);
         }
     };
 
@@ -134,7 +241,7 @@ const ProjectDetail = () => {
         fetchUniversityApprovals(universityName);
     };
 
-    if (!project || isAuthLoading) {
+    if (!project || isAuthLoading || loading) {
         return <Loading />;
     }
 
@@ -243,13 +350,28 @@ const ProjectDetail = () => {
                         {project.editStatus === "locked" && (
                             <div className="flex space-x-2 sm:hidden">
                                 <button
-                                    className={`p-2 rounded-xl ${theme === "dark" ? "bg-blue-700 text-gray-300 hover:bg-blue-600" : "bg-blue-200 text-blue-600 hover:bg-blue-300"
-                                        } transition-all duration-300 transform hover:scale-110`}
+                                    onClick={() => setIsEditRequestModalOpen(true)}
+                                    disabled={hasPendingEditRequest || hasPendingDeleteRequest}
+                                    className={`p-3 rounded-xl ${theme === "dark"
+                                            ? hasPendingEditRequest || hasPendingDeleteRequest
+                                                ? "bg-gray-700 text-gray-400"
+                                                : "bg-blue-700 text-gray-300 hover:bg-blue-600"
+                                            : hasPendingEditRequest || hasPendingDeleteRequest
+                                                ? "bg-gray-200 text-gray-400"
+                                                : "bg-blue-200 text-blue-600 hover:bg-blue-300"
+                                        } flex items-center ${hasPendingEditRequest || hasPendingDeleteRequest ? "cursor-not-allowed" : ""}`}
                                 >
                                     <Send size={20} />
                                 </button>
                                 <button
-                                    className="p-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110"
+                                    onClick={() => setIsDeleteRequestModalOpen(true)}
+                                    disabled={hasPendingDeleteRequest || hasPendingEditRequest}
+                                    className={`p-3 rounded-xl ${hasPendingDeleteRequest || hasPendingEditRequest
+                                            ? theme === "dark"
+                                                ? "bg-gray-700 text-gray-400"
+                                                : "bg-gray-200 text-gray-400"
+                                            : "bg-red-100 text-red-600 hover:bg-red-200"
+                                        } flex items-center ${hasPendingDeleteRequest || hasPendingEditRequest ? "cursor-not-allowed" : ""}`}
                                 >
                                     <Send size={20} />
                                 </button>
@@ -276,25 +398,53 @@ const ProjectDetail = () => {
                                 </button>
                             )}
                             {project.editStatus === "locked" && (
-                                <>
+                                <div className="flex space-x-4">
                                     <button
-                                        className={`p-3 rounded-xl ${theme === "dark" ? "bg-blue-700 text-gray-300 hover:bg-blue-600" : "bg-blue-200 text-blue-600 hover:bg-blue-300"
-                                            } transition-all duration-300 transform hover:scale-110 flex items-center cursor-pointer`}
+                                        onClick={() => setIsEditRequestModalOpen(true)}
+                                        disabled={hasPendingEditRequest || hasPendingDeleteRequest}
+                                        className={`p-3 rounded-xl flex items-center ${theme === "dark"
+                                                ? hasPendingEditRequest || hasPendingDeleteRequest
+                                                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                                                    : "bg-blue-700 text-gray-300 hover:bg-blue-600"
+                                                : hasPendingEditRequest || hasPendingDeleteRequest
+                                                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                                    : "bg-blue-200 text-blue-600 hover:bg-blue-300"
+                                            }`}
                                     >
                                         <Send size={20} className="mr-2" />
                                         <span>Request Edit</span>
                                     </button>
                                     <button
-                                        className="p-3 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300 transform hover:scale-110 flex items-center cursor-pointer"
+                                        onClick={() => setIsDeleteRequestModalOpen(true)}
+                                        disabled={hasPendingDeleteRequest || hasPendingEditRequest}
+                                        className={`p-3 rounded-xl flex items-center ${hasPendingDeleteRequest || hasPendingEditRequest
+                                                ? theme === "dark"
+                                                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                                : "bg-red-100 text-red-600 hover:bg-red-200"
+                                            }`}
                                     >
                                         <Send size={20} className="mr-2" />
                                         <span>Request Delete</span>
                                     </button>
-                                </>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
+
+                {/* Show info about pending requests */}
+                {(hasPendingEditRequest || hasPendingDeleteRequest) && (
+                    <div className={`mt-4 p-3 rounded-lg ${theme === "dark" ? "bg-blue-900/30 text-blue-200" : "bg-blue-100 text-blue-800"
+                        }`}>
+                        {hasPendingEditRequest && (
+                            <p>You have a pending edit request for this project.</p>
+                        )}
+                        {hasPendingDeleteRequest && (
+                            <p>You have a pending delete request for this project.</p>
+                        )}
+                    </div>
+                )}
             </motion.div>
 
             {/* Content Section - Scrollable */}
@@ -464,11 +614,87 @@ const ProjectDetail = () => {
                     theme={theme}
                 />
 
-                {isLoadingApprovals && (
-                    <Loading />
-                )}
-
             </motion.div>
+
+            {/* Edit Request Modal */}
+            {isEditRequestModalOpen && (
+                <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm`}>
+                    <div className={`rounded-xl shadow-2xl p-6 w-full max-w-2xl ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+                        <h3 className="text-xl font-bold mb-4">Request Project Edit</h3>
+
+                        <div className="space-y-4 mb-6">
+
+                            <div>
+                                <label className="block mb-2">Reason for Edit</label>
+                                <textarea
+                                    value={requestReason}
+                                    onChange={(e) => setRequestReason(e.target.value)}
+                                    rows={3}
+                                    className={`w-full p-3 rounded-lg ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
+                                    placeholder="Explain why you need to edit this project..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => setIsEditRequestModalOpen(false)}
+                                className={`px-4 py-2 rounded-lg ${theme === "dark" ? "bg-gray-600 hover:bg-gray-500" : "bg-gray-200 hover:bg-gray-300"}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleRequestEdit}
+                                disabled={loading}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                {loading ? "Submitting..." : "Submit Request"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Request Modal */}
+            {isDeleteRequestModalOpen && (
+                <div className={`fixed inset-0 z-50 flex items-center justify-center p-4  bg-black/40 backdrop-blur-sm`}>
+                    <div className={`rounded-xl shadow-2xl p-6 w-full max-w-md ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+                        <h3 className="text-xl font-bold mb-4">Request Project Deletion</h3>
+
+                        <div className="mb-6">
+                            <p className="mb-4">You are requesting to delete the project: <strong>{project.title}</strong></p>
+
+                            <div>
+                                <label className="block mb-2">Reason for Deletion</label>
+                                <textarea
+                                    value={requestReason}
+                                    onChange={(e) => setRequestReason(e.target.value)}
+                                    rows={3}
+                                    className={`w-full p-3 rounded-lg ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"}`}
+                                    placeholder="Explain why this project should be deleted..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => setIsDeleteRequestModalOpen(false)}
+                                className={`px-4 py-2 rounded-lg ${theme === "dark" ? "bg-gray-600 hover:bg-gray-500" : "bg-gray-200 hover:bg-gray-300"}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleRequestDelete}
+                                disabled={loading}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                            >
+                                {loading ? "Submitting..." : "Submit Request"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

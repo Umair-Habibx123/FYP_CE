@@ -28,6 +28,7 @@ import { getStudentCompletionStats, getStudentRatings } from "./controllers/stud
 import { getSuccessStories } from "./controllers/successStoriesController.js";
 import initializePrivacyPolicies from './scripts/privacyPolicyInitializer.js';
 import initializeAdminUser from './scripts/adminUserInitializer.js';
+import projectModificationRequestRoutes from "./routes/projectModifyRequestRoutes.js"
 
 
 import dotenv from 'dotenv';
@@ -92,6 +93,7 @@ app.use("/api", industryRoutes);
 app.use("/api", teacherRoutes);
 app.use("/api", studentRoutes);
 app.use("/api",  projectsRoutes);
+app.use("/api",  projectModificationRequestRoutes);
 // app.use("/api",  authMiddleware, projectsRoutes);
 app.use("/api", TeacherApproval);
 app.use("/api", TeacherSupervision);

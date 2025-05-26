@@ -28,42 +28,19 @@ const projectSchema = new Schema(
     requiredSkills: [{ type: String, required: true }],
     additionalInfo: { type: String, default: "" },
     representativeId: { type: String, required: true },
-
   },
   { timestamps: true }
 );
 
+
+projectSchema.methods.checkAndLockIfExpired = async function () {
+  if (this.editStatus === 'unlocked' && this.unlockedUntil && new Date() > this.unlockedUntil) {
+    this.editStatus = 'locked';
+    this.unlockedUntil = null;
+    await this.save();
+  }
+};
+
 const Project = model("Project", projectSchema);
 
 export default Project;
-
-
-
-// extensionRequests: [
-    //   {
-    //     requestId: { type: String, required: true },
-    //     requestedBy: { type: String, required: true },
-    //     requestedDate: { type: Date, required: true },
-    //     requestedEndDate: { type: Date, required: true },
-    //     status: {
-    //       type: String,
-    //       enum: ["pending", "approved", "rejected"],
-    //       required: true,
-    //     },
-    //     reason: { type: String, required: true },
-    //     reviewedBy: { type: String },
-    //     reviewDate: { type: Date },
-    //   },
-    // ],
-
-    // approvedExtensions: [
-    //   {
-    //     extensionId: { type: String, required: true },
-    //     originalEndDate: { type: Date, required: true },
-    //     newEndDate: { type: Date, required: true },
-    //     approvedBy: { type: String, required: true },
-    //     approvalDate: { type: Date, required: true },
-    //   },
-    // ],
-
-    // currentEndDate: { type: Date, required: true },

@@ -138,6 +138,12 @@ router.post("/insertTeacherApproval", async (req, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
+    if (status === "approved" && project.editStatus === "unlocked") {
+      project.editStatus = "locked";
+      project.unlockedUntil = null;
+      await project.save();
+    }
+
     // Determine recipients - typically the project creator
     const recipients = [{ userId: project.representativeId }];
 
@@ -203,7 +209,6 @@ router.post("/insertTeacherApproval", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 router.get(
   "/getApprovalDetailForTeacherWhoApprove/:projectId",

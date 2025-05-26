@@ -5,7 +5,12 @@ import { deleteFileFromGridFS } from "../routes/gridFsRoutes.js";
 import mongoose from "mongoose";
 import IndustryRepresentative from "../models/Industry.js";
 import StudentSelection from "../models/StudentSelection.js";
-import { isValidObjectId } from 'mongoose';
+import TeacherApproval from "../models/TeacherApproval.js";
+import TeacherSupervision from "../models/TeacherSupervision.js";
+import Review from "../models/Reviews.js";
+import StudentSubmissions from "../models/StudentSubmission.js";
+import ProjectModifyRequest from "../models/ProjectModifyRequests.js";
+import { isValidObjectId } from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -88,12 +93,12 @@ router.post("/AddProject", express.json(), async (req, res) => {
       industryName,
       attachments: parsedAttachments,
       ...(selection === "Group" && { maxStudentsPerGroup, maxGroups }),
-       editStatus : "unlocked",
-       unlockedUntil : null,
-       lastEditRequestId : null
+      editStatus: "unlocked",
+      unlockedUntil: null,
+      lastEditRequestId: null,
     });
 
-     const savedProject = await newProject.save();
+    const savedProject = await newProject.save();
     await IndustryRepresentative.updateOne(
       { _id: representativeId },
       { $push: { postedProjects: savedProject._id } }
@@ -104,16 +109,18 @@ router.post("/AddProject", express.json(), async (req, res) => {
       .json({ message: "Project added successfully", project: savedProject });
   } catch (error) {
     console.error("❌ Error saving project:", error);
-    
+
     // Handle duplicate key error (E11000)
     if (error.code === 11000 && error.keyPattern && error.keyPattern.title) {
-      return res.status(400).json({ error: "Project with this Title already exists. Project title must be unique" });
+      return res.status(400).json({
+        error:
+          "Project with this Title already exists. Project title must be unique",
+      });
     }
-    
+
     res.status(500).json({ error: "Failed to add project. Please try again." });
   }
 });
-
 
 router.put("/updateProject/:id", async (req, res) => {
   const { id } = req.params;
@@ -149,27 +156,46 @@ router.delete("/deleteProject/:id", async (req, res) => {
 
     if (project.attachments && project.attachments.length > 0) {
       for (const attachment of project.attachments) {
-        
-    // Assuming fileUrl looks like: "/file/BUCKET_NAME/FILENAME"
+        // Assuming fileUrl looks like: "/file/BUCKET_NAME/FILENAME"
         await deleteFileFromGridFS(attachment.fileUrl);
       }
     }
 
     await Project.findByIdAndDelete(id);
+    // Delete related documents from other collections
+    await Promise.all([
+      TeacherApproval.deleteOne({ _id: id }).catch((err) =>
+        console.error("⚠️ Error deleting teacher approvals:", err)
+      ),
+      TeacherSupervision.deleteOne({ _id: id }).catch((err) =>
+        console.error("⚠️ Error deleting teacher supervision:", err)
+      ),
+      StudentSelection.deleteOne({ _id: id }).catch((err) =>
+        console.error("⚠️ Error deleting student selections:", err)
+      ),
+      StudentSubmissions.deleteOne({ _id: id }).catch((err) =>
+        console.error("⚠️ Error deleting student submissions:", err)
+      ),
+      Review.deleteMany({ projectId: id }).catch((err) =>
+        console.error("⚠️ Error deleting reviews:", err)
+      ),
+      ProjectModifyRequest.deleteMany({ projectId: id }).catch((err) =>
+        console.error("⚠️ Error deleting modify requests:", err)
+      ),
+    ]);
 
-    await IndustryRepresentative.updateOne(
-      { _id: project.representativeId },
-      { $pull: { postedProjects: id } }
-    );
-
-    res
-      .status(200)
-      .json({ message: "Project and associated files deleted successfully" });
+    res.status(200).json({ 
+      message: "Project and all associated data cleanup attempted successfully" 
+    });
   } catch (error) {
     console.error("❌ Error deleting project:", error);
-    res.status(500).json({ message: "Internal server error", error });
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error.message 
+    });
   }
 });
+
 
 router.get("/fetchProjectDetailById/:id", async (req, res) => {
   try {
@@ -235,6 +261,5 @@ router.get("/getCompletedProjects", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
-
 
 export default router;
