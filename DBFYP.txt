@@ -1,4 +1,4 @@
-*Project 2:*
+*Project 2:* - FYP
 Getting Final Year Project (FYP) from industry is not an easy job for the students and teachers. We want to build a web based
 portal system where students, teachers and industry will have access. The industry representative will post a FYP idea on the portal,
 teach will go through it and either will approve it or will ask for more information from industry representatives. Once its approved
