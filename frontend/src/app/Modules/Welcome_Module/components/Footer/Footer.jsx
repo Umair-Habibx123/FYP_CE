@@ -9,8 +9,8 @@ const Footer = () => {
         imageUrl: Image,
         role: "Full Stack Developer",
         github: "https://github.com/",
-        linkedin: "https://pk.linkedin.com/in/umair-habib-8a2825266"
-    };
+        linkedin: "https://www.linkedin.com/in/umair-habib-developer"
+    };                                  
 
     const socialLinks = [
         { icon: <Facebook size={18} />, url: "https://facebook.com", name: "Facebook" },

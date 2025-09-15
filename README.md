@@ -139,6 +139,18 @@ nodemon index.js
 
 ---
 
+## Database Setup
+
+This project uses MongoDB (Atlas). Follow these steps:
+
+- Create a free cluster at MongoDB Atlas
+- Whitelist your IP address.
+- Create a database user and password.
+- Copy the connection string into your .env:      MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/collaborativeEdge
+- Models are automatically created in MongoDB when used in the backend code (no SQL migrations needed).
+- If seed data is required, contact me.
+
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
